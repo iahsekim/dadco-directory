@@ -19,7 +19,10 @@
  */
 
 const SHEET_ID = '';          // leave blank when the script is bound to the Sheet
-const ADMIN_EMAIL = '';       // optional: get an email whenever someone submits a claim or edit
+// Where organizer notifications go (claims, edits, join requests). Set it in
+// Project Settings → Script Properties as ADMIN_EMAIL so pasting new code never wipes it.
+const ADMIN_EMAIL = '';
+function adminEmail_() { return PropertiesService.getScriptProperties().getProperty('ADMIN_EMAIL') || ADMIN_EMAIL; }
 const EVENT_NAME = 'Dad & Co';
 const DIR = 'Directory';
 const PENDING = 'Pending';
@@ -130,8 +133,8 @@ const ACTIONS = {
       sheet_(PENDING).appendRow([Utilities.getUuid(), String(entry.id), auth.email, new Date().toISOString(), 'published',
         JSON.stringify(Object.assign({}, data, { _prev: prev, _claim: !prev.claimed }))]);
     });
-    if (ADMIN_EMAIL) {
-      MailApp.sendEmail(ADMIN_EMAIL,
+    if (adminEmail_()) {
+      MailApp.sendEmail(adminEmail_(),
         `${EVENT_NAME}: ${data.name} ${wasClaimed ? 'updated their profile' : 'claimed their profile'}`,
         'It is live now. Open the directory with #admin at the end of the URL to see recent changes or undo one.');
     }
@@ -247,7 +250,7 @@ const ACTIONS = {
       sh.appendRow([Utilities.getUuid(), '', email, new Date().toISOString(), 'pending', JSON.stringify({ type: 'join', name })]);
     });
     cache.put('join:' + email, '1', 600);
-    if (ADMIN_EMAIL) MailApp.sendEmail(ADMIN_EMAIL, `${EVENT_NAME}: ${name} asked to be added`, 'Open the directory with #admin at the end of the URL to review it.');
+    if (adminEmail_()) MailApp.sendEmail(adminEmail_(), `${EVENT_NAME}: ${name} asked to be added`, 'Open the directory with #admin at the end of the URL to review it.');
     return {};
   },
 
