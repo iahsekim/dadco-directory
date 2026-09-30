@@ -251,6 +251,48 @@ const ACTIONS = {
     return {};
   },
 
+  // ---- Organizer editing: everyone in the Directory, no claiming needed ----
+  adminPeople(req) {
+    checkAdmin_(req.key);
+    const guests = currentGuestIds_();
+    const people = readDir_().filter(r => r.id && r.name).map(r => Object.assign(toPublic_(r), {
+      email: String(r.email || ''), claimed: isClaimed_(r), hidden: isHidden_(r),
+      onList: !guests || !!guests[String(r.id)], updatedAt: String(r.updatedAt || '')
+    }));
+    return { people, hasEvent: !!guests };
+  },
+
+  // Save any person's profile and settings. No id = create a new person.
+  // Logged like a claim/edit (email "organizer"), so it shows in Recent changes with Undo.
+  adminSavePerson(req) {
+    checkAdmin_(req.key);
+    const data = clean_(req.entry);
+    const s = req.settings || {};
+    const emails = String(s.email || '').split(/[\s,;]+/).map(normEmail_).filter(Boolean);
+    if (emails.some(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))) throw new Error("One of those emails doesn't look right.");
+    const out = withLock_(() => {
+      let entry = req.id ? entryById_(req.id) : null;
+      if (req.id && !entry) throw new Error('That person no longer exists.');
+      if (!entry) {
+        const id = addToCurrent_(data.name, emails[0] || '').person.id;
+        entry = entryById_(id);
+      }
+      const other = emails.map(e => findByEmail_(e)).find(r => r && String(r.id) !== String(entry.id));
+      if (other) throw new Error(`That email is already used by ${other.name}.`);
+      const prev = Object.assign(toPublic_(entry), { claimed: isClaimed_(entry) });
+      writeRow_(entry._row, {
+        name: data.name, kids: kidsText_(data.kids), home: data.home, askHome: data.askHome.join(', '),
+        company: data.company, work: data.work, askWork: data.askWork.join(', '), links: linksText_(data.links),
+        email: emails.join(', '), claimed: s.claimed ? 'TRUE' : '', hidden: s.hidden ? 'TRUE' : ''
+      });
+      setOnList_(String(entry.id), data.name, emails[0] || '', s.onList !== false);
+      sheet_(PENDING).appendRow([Utilities.getUuid(), String(entry.id), 'organizer', new Date().toISOString(), 'published',
+        JSON.stringify(Object.assign({}, data, { _prev: prev, _claim: false, _admin: true }))]);
+      return entry.id;
+    });
+    return { id: String(out) };
+  },
+
   // Last 25 published claims/edits, newest first. Only the latest change per person can be undone.
   adminRecent(req) {
     checkAdmin_(req.key);
@@ -573,6 +615,16 @@ function addToCurrent_(name, email) {
     if (!already) { rs.appendRow([eventId, id, email, name, 'manual']); added = true; }
   }
   return { person: { id, name: hit ? String(hit.name) : name, how, added } };
+}
+
+// Put a person on (or take them off) the current event's guest list.
+function setOnList_(id, name, email, on) {
+  const eventId = PropertiesService.getScriptProperties().getProperty('CURRENT_EVENT');
+  if (!eventId) return;
+  const rs = sheet_(RSVPS), vals = rs.getDataRange().getValues();
+  const rows = []; vals.forEach((r, k) => { if (k > 0 && String(r[0]) === eventId && String(r[1]) === id) rows.push(k + 1); });
+  if (on && !rows.length) rs.appendRow([eventId, id, email, name, 'manual']);
+  if (!on) rows.reverse().forEach(n => rs.deleteRow(n));
 }
 
 function currentEvent_() {
