@@ -1,0 +1,4 @@
+# Netlify publishes only the site/ folder. backend/Code.gs is kept here for safekeeping and is not public.
+[build]
+  publish = "site"
+  command = ""
