@@ -350,6 +350,45 @@ a.lnk:hover .link-lbl{color:inherit}
 .rec-name{margin-right:auto}
 .recent .actions{margin-top:10px}
 .tag-edit{font-family:"Bricolage Grotesque", system-ui, sans-serif; font-size:.75rem; font-weight:700; background:var(--hair); color:var(--ink); border-radius:999px; padding:2px 8px; vertical-align:middle}
+
+/* organizer: everyone table */
+.ppl-section h3{margin-top:22px}
+.ppl-tools{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:6px 0 8px}
+.admin .ppl-tools input[type=search]{flex:1; min-width:200px; padding:.6rem .75rem; border:1.5px solid var(--outline); border-radius:10px; background:var(--card)}
+.ppl-check{display:flex; align-items:center; gap:6px; font-size:.9rem; white-space:nowrap}
+.ppl-check input{accent-color:var(--rust); width:18px; height:18px}
+.ppl-wrap{overflow-x:auto; border:1.5px solid var(--outline); border-radius:12px; background:var(--card); max-height:520px; overflow-y:auto}
+.ppl{border-collapse:collapse; width:100%; font-size:.88rem}
+.ppl th{position:sticky; top:0; background:var(--ink); color:var(--paper); text-align:left; font-weight:700; padding:9px 10px; white-space:nowrap; z-index:1}
+.ppl td{padding:9px 10px; border-top:1px solid var(--hair); vertical-align:middle}
+.ppl tbody tr{cursor:pointer}
+.ppl tbody tr:hover{background:var(--paper)}
+.ppl .c-email{max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ppl .c-edit{text-align:right}
+.vh{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+.st{display:inline-block; font-size:.75rem; font-weight:700; border-radius:999px; padding:2px 8px; white-space:nowrap}
+.st-live{background:var(--rust); color:var(--rust-ink)}
+.st-name{background:var(--hair); color:var(--ink)}
+.st-hidden{background:var(--wait-bg); color:var(--wait)}
+.group.org{background:var(--paper); border:1.5px solid var(--hair); border-radius:12px; padding:4px 14px 12px}
+.group.org legend{padding:0 4px}
+.switch{display:flex; gap:10px; align-items:flex-start; margin-top:12px; cursor:pointer}
+.switch input{accent-color:var(--rust); width:20px; height:20px; margin-top:2px; flex-shrink:0}
+.switch .hint{display:block; font-size:.82rem; color:var(--muted)}
+@media (max-width:640px){
+  .ppl-wrap{max-height:none; border:0; background:none; overflow:visible}
+  .ppl thead{display:none}
+  .ppl, .ppl tbody, .ppl tr, .ppl td{display:block; width:100%}
+  .ppl tr{border:1.5px solid var(--outline); border-radius:12px; background:var(--card); padding:8px 12px; margin-bottom:10px; display:grid; grid-template-columns:auto 1fr; gap:2px 10px}
+  .ppl td{border:0; padding:2px 0; display:contents}
+  .ppl td::before{content:attr(data-l); font-size:.75rem; font-weight:700; color:var(--muted); align-self:center}
+  .ppl td.c-name{display:block; grid-column:1 / -1; font-size:1rem}
+  .ppl td.c-name::before, .ppl td.c-edit::before{content:none}
+  .ppl td.c-edit{display:block; grid-column:1 / -1; text-align:left; margin-top:6px}
+  .ppl td.c-edit .btn{width:100%}
+  .ppl .c-email{max-width:none}
+  .ppl .st{justify-self:start}
+}
 </style>
 </head>
 <body>
@@ -725,6 +764,44 @@ function kidRow(k){
   </div>`;
 }
 
+function profileFieldsHTML(src){
+  return `
+      <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required value="${esc(src.name)}"></div>
+
+      <fieldset class="group home">
+        <legend>At home</legend>
+        <div class="field"><span class="label">Your kids</span>
+          <span class="hint">Use 0 for babies under a year. Leave the age blank if you'd rather not share it.</span>
+          <div id="kidList">${(src.kids.length ? src.kids : [null]).map(kidRow).join("")}</div>
+          <button type="button" class="btn ghost sm addkid" data-addkid>Add a kid</button>
+        </div>
+        <div class="field"><label for="fHome">Life at home</label>
+          <span class="hint">What are the kids into? What's been the best part lately, and the hardest?</span>
+          <textarea id="fHome" maxlength="1200">${esc(src.home)}</textarea></div>
+        <div class="field"><label for="fAskHome">Ask me about</label><span class="hint">Dad-life conversation starters, separated by commas</span>
+          <input id="fAskHome" value="${esc(src.askHome.join(", "))}"></div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>At work</legend>
+        <div class="field"><label for="fCo">What you run</label><span class="hint">Business name, or what it does in a few words</span>
+          <input id="fCo" maxlength="100" value="${esc(src.company)}"></div>
+        <div class="field"><label for="fWork">Life at work</label>
+          <span class="hint">What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
+          <textarea id="fWork" maxlength="1200">${esc(src.work)}</textarea></div>
+        <div class="field"><label for="fAskWork">Ask me about</label><span class="hint">Business conversation starters, separated by commas</span>
+          <input id="fAskWork" value="${esc(src.askWork.join(", "))}"></div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Where to find me</legend>
+        <p class="hint">Optional. Add only what you want public. Empty ones are left off your profile.</p>
+        <div id="linkList">${(src.links || []).map(linkRow).join("")}</div>
+        <button type="button" class="btn ghost sm addkid" data-addlink>Add a link</button>
+      </fieldset>
+`;
+}
+
 function manageHTML(confirming){
   const claimed = ed.entry && ed.entry.claimed;
   if (confirming) return `<div class="confirm" role="alert">
@@ -780,6 +857,30 @@ function renderEdit(){
         <button class="btn primary" ${dis}>${ed.busy ? "Opening…" : "Continue"}</button></div>
     </form>`;
     $("#em").focus();
+  } else if (ed.step === "admin"){
+    const p = ed.admin;
+    editBody.innerHTML = `<form id="fAdmin" novalidate>
+      <h2>${p.id ? `Edit ${esc(p.name)}` : "New person"}</h2>
+      <p class="muted">Organizer edit. Saves straight to the directory and shows up in Recent changes, where you can undo it.</p>
+      <fieldset class="group org">
+        <legend>Organizer settings</legend>
+        <div class="field"><label for="aEmail">Email</label>
+          <span class="hint">His RSVP email. Lets him claim and edit his own profile. Separate more than one with commas.</span>
+          <input id="aEmail" type="text" inputmode="email" autocomplete="off" value="${esc(p.email)}"></div>
+        <label class="switch"><input type="checkbox" id="aClaimed" ${p.claimed ? "checked" : ""}>
+          <span><strong>Show full profile</strong><span class="hint">Off shows just his name with a Claim profile button.</span></span></label>
+        <label class="switch"><input type="checkbox" id="aOnList" ${p.onList ? "checked" : ""}>
+          <span><strong>On the current guest list</strong><span class="hint">Off keeps him saved but off the page for this event.</span></span></label>
+        <label class="switch"><input type="checkbox" id="aHidden" ${p.hidden ? "checked" : ""}>
+          <span><strong>Hidden</strong><span class="hint">Never show him on the page, even when he's on the guest list.</span></span></label>
+      </fieldset>
+      <hr class="divider">
+      ${profileFieldsHTML(p)}
+      ${err}
+      <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
+        <button class="btn primary" ${dis}>${ed.busy ? "Saving…" : p.id ? "Save" : "Add person"}</button></div>
+    </form>`;
+    editBody.scrollTop = 0; editDlg.scrollTop = 0;
   } else if (ed.step === "join"){
     editBody.innerHTML = `<form id="fJoin" novalidate>
       <h2>Ask to be added</h2>
@@ -805,39 +906,7 @@ function renderEdit(){
       <p class="as-email">Using ${esc(ed.email)} <button type="button" class="btn link inline" data-switch>Change</button></p>
       ${!claimed ? `<p class="notice">We started your profile from what we know. Fix anything that's off and add what's missing. Nothing shows publicly until you publish it.</p>` : `<p class="muted">Changes show up in the directory as soon as you save.</p>`}
       ${ed.entry.hidden ? `<p class="notice hidden-note">Your profile is hidden. Nobody else can see your name in the directory right now.</p>` : ""}
-      <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required value="${esc(src.name)}"></div>
-
-      <fieldset class="group home">
-        <legend>At home</legend>
-        <div class="field"><span class="label">Your kids</span>
-          <span class="hint">Use 0 for babies under a year. Leave the age blank if you'd rather not share it.</span>
-          <div id="kidList">${(src.kids.length ? src.kids : [null]).map(kidRow).join("")}</div>
-          <button type="button" class="btn ghost sm addkid" data-addkid>Add a kid</button>
-        </div>
-        <div class="field"><label for="fHome">Life at home</label>
-          <span class="hint">What are the kids into? What's been the best part lately, and the hardest?</span>
-          <textarea id="fHome" maxlength="1200">${esc(src.home)}</textarea></div>
-        <div class="field"><label for="fAskHome">Ask me about</label><span class="hint">Dad-life conversation starters, separated by commas</span>
-          <input id="fAskHome" value="${esc(src.askHome.join(", "))}"></div>
-      </fieldset>
-
-      <fieldset class="group">
-        <legend>At work</legend>
-        <div class="field"><label for="fCo">What you run</label><span class="hint">Business name, or what it does in a few words</span>
-          <input id="fCo" maxlength="100" value="${esc(src.company)}"></div>
-        <div class="field"><label for="fWork">Life at work</label>
-          <span class="hint">What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
-          <textarea id="fWork" maxlength="1200">${esc(src.work)}</textarea></div>
-        <div class="field"><label for="fAskWork">Ask me about</label><span class="hint">Business conversation starters, separated by commas</span>
-          <input id="fAskWork" value="${esc(src.askWork.join(", "))}"></div>
-      </fieldset>
-
-      <fieldset class="group">
-        <legend>Where to find me</legend>
-        <p class="hint">Optional. Add only what you want public. Empty ones are left off your profile.</p>
-        <div id="linkList">${(src.links || []).map(linkRow).join("")}</div>
-        <button type="button" class="btn ghost sm addkid" data-addlink>Add a link</button>
-      </fieldset>
+      ${profileFieldsHTML(src)}
       ${err}
       <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
         <button class="btn primary" ${dis}>${ed.busy ? (claimed ? "Saving…" : "Publishing…") : claimed ? "Save changes" : "Publish my profile"}</button></div>
@@ -913,7 +982,21 @@ editBody.addEventListener("submit", async ev => {
   ed.error = "";
   let snapshot = null;
   try{
-    if (id === "fJoin"){
+    if (id === "fAdmin"){
+      snapshot = {
+        name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAskHome").value),
+        company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: splitList($("#fAskWork").value), links: readLinks()
+      };
+      const settings = { email: $("#aEmail").value.trim(), claimed: $("#aClaimed").checked, onList: $("#aOnList").checked, hidden: $("#aHidden").checked };
+      if (!snapshot.name) throw new Error("Add a name.");
+      Object.assign(ed.admin, snapshot, settings);   // keep typing if save fails
+      ed.busy = true; renderEdit();
+      await api("adminSavePerson", { key: adminKey, id: ed.admin.id, entry: snapshot, settings });
+      editDlg.close(); ed.busy = false;
+      toast(`Saved ${snapshot.name}.`);
+      await Promise.all([renderAdmin(), load()]);
+      return;
+    } else if (id === "fJoin"){
       const name = $("#jName").value.trim(), email = norm($("#jEmail").value);
       if (!name) throw new Error("Add your name.");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Add the email you want to use for your profile.");
@@ -982,12 +1065,14 @@ async function renderAdmin(){
   adminEl.innerHTML = `<h2 id="adminTitle">Organizer tools</h2><p class="muted">Loading…</p>`;
   let items, event, recent;
   try{
-    const [l, e, rc] = await Promise.all([
+    const [l, e, rc, pp] = await Promise.all([
       api("adminList", { key: adminKey }),
       api("adminEvent", { key: adminKey }),
-      api("adminRecent", { key: adminKey }).catch(err => /unknown action/i.test(err.message) ? { items: [], old: true } : Promise.reject(err))
+      api("adminRecent", { key: adminKey }).catch(err => /unknown action/i.test(err.message) ? { items: [], old: true } : Promise.reject(err)),
+      api("adminPeople", { key: adminKey }).catch(err => /unknown action/i.test(err.message) ? { people: null } : Promise.reject(err))
     ]);
     items = l.items; event = e.event; adminLuma = e.luma || null; recent = rc.items; oldBackend = !!rc.old;
+    people = pp.people; peopleHasEvent = !!pp.hasEvent;
   }catch(e){
     adminKey = ""; store("dc_admin");
     adminEl.innerHTML = `<h2 id="adminTitle">Organizer tools</h2><p class="error" role="alert">${esc(e.message)}</p>${keyForm("Try again")}`;
@@ -1003,6 +1088,16 @@ async function renderAdmin(){
       <div id="lumaStatus">${lumaStatusHTML()}</div>
       <div id="addBox">${addHTML()}</div>
       <div id="importBox">${importHTML()}</div>
+    </section>
+    <section aria-labelledby="pplTitle" class="ppl-section">
+      <h3 id="pplTitle">Everyone</h3>
+      ${people ? `<div class="ppl-tools">
+          <input type="search" id="pplQ" placeholder="Filter by name, business, email" aria-label="Filter people" value="${esc(pplQ)}">
+          ${peopleHasEvent ? `<label class="ppl-check"><input type="checkbox" id="pplOnly" ${pplOnly ? "checked" : ""}> Only this event's guests</label>` : ""}
+          <button type="button" class="btn ghost sm" data-person-new>New person</button>
+        </div>
+        <div id="pplTable">${peopleTableHTML()}</div>`
+        : `<p class="notice">Paste the latest Code.gs into Apps Script and deploy a new version to edit everyone here.</p>`}
     </section>
     <section aria-labelledby="recTitle">
       <h3 id="recTitle">Recent claims and edits</h3>
@@ -1055,6 +1150,41 @@ function lumaStatusHTML(){
     </div>`;
 }
 let oldBackend = false;
+let people = null, peopleHasEvent = false, pplQ = "", pplOnly = true;
+
+function kidsShort(kids){
+  return (kids || []).map(k => (k.age == null ? "?" : k.age === 0 ? "<1" : k.age) + (k.is === "girl" ? "g" : k.is === "boy" ? "b" : "")).join(", ");
+}
+function peopleTableHTML(){
+  const q = norm(pplQ);
+  const list = people.filter(p => (!pplOnly || !peopleHasEvent || p.onList) &&
+      (!q || norm([p.name, p.company, p.email].join(" ")).includes(q)))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  if (!list.length) return `<p class="muted">No one matches.</p>`;
+  const status = p => p.hidden ? `<span class="st st-hidden">Hidden</span>` : p.claimed ? `<span class="st st-live">Live</span>` : `<span class="st st-name">Name only</span>`;
+  return `<p class="muted small">${list.length} ${list.length === 1 ? "person" : "people"}. Tap a row to edit.</p>
+    <div class="ppl-wrap"><table class="ppl">
+      <thead><tr><th>Name</th><th>Kids</th><th>Business</th><th>Email</th><th>Profile</th>${peopleHasEvent ? "<th>Guest list</th>" : ""}<th><span class="vh">Edit</span></th></tr></thead>
+      <tbody>${list.map(p => `<tr data-person="${esc(p.id)}">
+        <td class="c-name" data-l="Name"><strong>${esc(p.name)}</strong></td>
+        <td data-l="Kids">${esc(kidsShort(p.kids)) || `<span class="muted">—</span>`}</td>
+        <td data-l="Business">${esc(p.company) || `<span class="muted">—</span>`}</td>
+        <td data-l="Email" class="c-email">${esc(p.email) || `<span class="muted">none</span>`}</td>
+        <td data-l="Profile">${status(p)}</td>
+        ${peopleHasEvent ? `<td data-l="Guest list">${p.onList ? "On list" : `<span class="muted">Not this event</span>`}</td>` : ""}
+        <td class="c-edit"><button type="button" class="btn ghost sm" data-person="${esc(p.id)}">Edit</button></td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+}
+function refreshPeople(){ const el = $("#pplTable"); if (el) el.innerHTML = peopleTableHTML(); }
+
+/* organizer editor: reuses the profile form inside the edit dialog */
+function openAdminEdit(id){
+  const p = id ? people.find(x => x.id === id) : null;
+  ed.admin = p ? JSON.parse(JSON.stringify(p))
+    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], email:"", claimed:false, hidden:false, onList:true };
+  ed.error = ""; ed.step = "admin"; renderEdit(); editDlg.showModal();
+}
 function recentHTML(it){
   const prev = it.prev || {}, now = it.now || {};
   const changed = FIELDS.filter(([k]) => fmt(k, prev[k]) !== fmt(k, now[k]));
@@ -1242,6 +1372,9 @@ adminEl.addEventListener("submit", async ev => {
 
 adminEl.addEventListener("click", async ev => {
   if (ev.target.closest("[data-lock]")){ adminKey = ""; store("dc_admin"); importDraft = null; renderAdmin(); return; }
+  const pr = ev.target.closest("[data-person]");
+  if (pr){ openAdminEdit(pr.dataset.person); return; }
+  if (ev.target.closest("[data-person-new]")){ openAdminEdit(null); return; }
   if (ev.target.closest("[data-add-open]")){ addOpen = true; $("#addBox").innerHTML = addHTML(); $("#adName").focus(); return; }
   if (ev.target.closest("[data-add-cancel]")){ addOpen = false; $("#addBox").innerHTML = addHTML(); return; }
   if (ev.target.closest("[data-import-open]")){ importDraft = { source:"csv", event:{ name:"", date:"", url:"" } }; refreshImport(); $("#imName").focus(); return; }
@@ -1301,6 +1434,12 @@ adminEl.addEventListener("click", async ev => {
     toast(e.message);
     sub.querySelectorAll("button").forEach(b => b.disabled = false);
   }
+});
+adminEl.addEventListener("input", ev => {
+  if (ev.target.id === "pplQ"){ pplQ = ev.target.value; refreshPeople(); }
+});
+adminEl.addEventListener("change", ev => {
+  if (ev.target.id === "pplOnly"){ pplOnly = ev.target.checked; refreshPeople(); }
 });
 window.addEventListener("hashchange", renderAdmin);
 
@@ -1363,6 +1502,21 @@ function makeDemo(){
       if (!e.email) e.email = norm(email);
       pending.push({ submissionId: Math.random().toString(36).slice(2), entryId:e.id, email: norm(email), submittedAt: new Date().toISOString(), status:"published", data: Object.assign({}, entry, { _prev: prev, _claim: !prev.claimed }) });
       return { entry: owner(e) };
+    },
+    adminPeople({ key }){
+      if (key !== "demo") throw new Error("That admin key is wrong.");
+      return { hasEvent: true, people: db.map(e => Object.assign(pub(e), { email:e.email || "", claimed:!!e.claimed, hidden:!!e.hidden, onList: event.ids.has(e.id) })) };
+    },
+    adminSavePerson({ key, id, entry, settings }){
+      if (key !== "demo") throw new Error("That admin key is wrong.");
+      let e = id ? byId(id) : null;
+      if (!e){ e = byId(demoAdd(entry.name, norm(settings.email).split(/[\s,;]+/)[0] || "").id); }
+      const prev = Object.assign(pub(e), { claimed: !!e.claimed });
+      Object.assign(e, JSON.parse(JSON.stringify(entry)), { email: norm(settings.email), claimed: !!settings.claimed, hidden: !!settings.hidden });
+      if (settings.onList) event.ids.add(e.id); else event.ids.delete(e.id);
+      event.guests = event.ids.size;
+      pending.push({ submissionId: Math.random().toString(36).slice(2), entryId:e.id, email:"organizer", submittedAt:new Date().toISOString(), status:"published", data: Object.assign({}, entry, { _prev: prev, _claim:false }) });
+      return { id: e.id };
     },
     adminRecent({ key }){
       if (key !== "demo") throw new Error("That admin key is wrong.");
