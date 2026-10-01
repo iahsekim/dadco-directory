@@ -1,8 +1,8 @@
 /**
  * Dad & Co — meetup directory backend (Google Apps Script + Google Sheets)
  *
- * Profiles are opt-in. Until someone claims theirs, the public page shows only their name
- * and a "Claim profile" button. Claims and edits publish right away; each one is logged in the
+ * Profiles are public by default (opt-out). Anyone can edit their own with their RSVP email,
+ * or hide/clear it. "claimed" just records that the person has confirmed it themselves. Claims and edits publish right away; each one is logged in the
  * Pending tab (status "published") with the previous version, so you can undo it from #admin.
  *
  * Sheets it manages:
@@ -97,14 +97,11 @@ function doGet() {
 }
 
 const ACTIONS = {
-  // Public view: full details for claimed profiles, name only for everyone else.
+  // Public view: full profiles for everyone on the current guest list who isn't hidden.
   list() {
-    const pendingIds = {};
-    pendingRows_().forEach(r => { pendingIds[String(r[1])] = true; });
     const guests = currentGuestIds_();
-    const entries = readDir_().filter(r => r.name && !isHidden_(r) && (!guests || guests[String(r.id)])).map(r => isClaimed_(r)
-      ? Object.assign(toPublic_(r), { claimed: true })
-      : { id: String(r.id), name: String(r.name), claimed: false, pending: !!pendingIds[String(r.id)] });
+    const entries = readDir_().filter(r => r.name && !isHidden_(r) && (!guests || guests[String(r.id)]))
+      .map(r => Object.assign(toPublic_(r), { claimed: isClaimed_(r) }));
     return { entries, event: publicEvent_(currentEvent_()) };
   },
 
@@ -241,7 +238,7 @@ const ACTIONS = {
     const cache = CacheService.getScriptCache();
     if (cache.get('join:' + email)) throw new Error('We already have your request. An organizer will add you soon.');
     const guests = currentGuestIds_(), mine = findByEmail_(email);
-    if (mine && (!guests || guests[String(mine.id)])) throw new Error("You're already on the list. Find your name below and tap Claim profile.");
+    if (mine && (!guests || guests[String(mine.id)])) throw new Error("You're already on the list. Tap Edit your profile at the top to fill yours in.");
     withLock_(() => {
       const sh = sheet_(PENDING), vals = sh.getDataRange().getValues();
       for (let k = 1; k < vals.length; k++) {
@@ -398,7 +395,7 @@ function authorize_(rawEmail, id) {
     }
     return { email, entry: target };
   }
-  if (!byEmail) throw new Error("That email isn't on the RSVP list. Find your name in the directory and tap Claim profile.");
+  if (!byEmail) throw new Error("That email isn't on the RSVP list. Use the address you RSVP'd with, or ask to be added.");
   return { email, entry: byEmail };
 }
 
