@@ -514,6 +514,7 @@ body{font-size:17px; line-height:1.6}
 .nt-more svg{width:18px; height:18px; transition:transform .3s ease}
 .nt.is-open .nt-more svg{transform:rotate(180deg)}
 .nt.is-open{box-shadow:0 0 0 2px var(--rust)}
+.nt.is-open .nt-pitch{visibility:hidden}
 .nt-detail{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s ease}
 .nt.is-open .nt-detail{grid-template-rows:1fr}
 .nt-detail-in{overflow:hidden; min-height:0}
@@ -563,6 +564,42 @@ body{font-size:17px; line-height:1.6}
 .nt-stage{margin:-2px 0 10px; font-size:.88rem; color:var(--muted)}
 .chips-row.need li{border-color:var(--rust); border-style:dashed; background:var(--card)}
 @media (max-width:640px){ .three{grid-template-columns:1fr 1fr} .check-inline{grid-column:1 / -1; margin-top:0} }
+
+/* ---------- audit pass ---------- */
+.fsec{border:1.5px solid var(--hair); border-radius:12px; margin-top:12px; background:var(--card)}
+.fsec > summary{list-style:none; cursor:pointer; padding:12px 14px; display:flex; flex-direction:column; gap:1px; position:relative; padding-right:40px}
+.fsec > summary::-webkit-details-marker{display:none}
+.fsec > summary::after{content:""; position:absolute; right:16px; top:50%; width:9px; height:9px; border-right:2px solid var(--rust); border-bottom:2px solid var(--rust); transform:translateY(-70%) rotate(45deg); transition:transform .2s}
+.fsec[open] > summary::after{transform:translateY(-30%) rotate(-135deg)}
+.fsec-t{font-weight:800; font-size:1rem}
+.fsec-s{font-size:.82rem; color:var(--muted)}
+.fsec-b{padding:0 14px 14px}
+.fsec-b input, .fsec-b textarea, .fsec-b select, .spaghetti textarea{box-sizing:border-box; max-width:100%}
+.fsec-b > .field:first-child, .fsec-b > .two:first-child .field, .fsec-b > .three:first-child .field{margin-top:4px}
+.spaghetti .hint{display:block; font-size:.88rem; color:var(--muted); line-height:1.5}
+.spaghetti textarea{font-size:.97rem}
+.actions.sticky{position:sticky; bottom:0; z-index:2; background:var(--card); margin:16px -24px -24px; padding:12px 24px calc(12px + env(safe-area-inset-bottom,0px)); border-top:1.5px solid var(--hair)}
+.checks{margin-top:12px}
+.nt-co{margin:0 0 2px; font-weight:700; font-size:1.04rem}
+.nt-stage{margin:0 0 10px}
+.nt-tags{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 6px; margin:10px 0 0; font-size:.9rem}
+.nt-tl{font-weight:700; color:var(--muted); margin-right:4px; font-size:.84rem}
+.nt-tag{background:var(--paper); border:1px solid var(--hair); border-radius:8px; padding:2px 9px; line-height:1.5}
+.nt-tags.need .nt-tl{color:var(--rust)}
+.nt-tags.need .nt-tag{border:1px dashed var(--rust); background:var(--card)}
+.nt-ask{margin-top:14px; padding-top:12px; border-top:1.5px dashed var(--hair)}
+.nt-ask .nt-tags{margin-top:0}
+.nt-find{margin-top:16px}
+.nt-pairs{margin-top:18px; padding-top:14px}
+.nt-foot-row{margin-top:14px}
+.btn.link.small{font-size:.88rem; padding:.4rem 0; min-height:0}
+.join-line{text-align:center; margin:0 0 56px; color:var(--muted)}
+.count{color:var(--muted)}
+@media (max-width:640px){
+  .actions.sticky{margin:16px -18px calc(-20px - env(safe-area-inset-bottom,0px)); padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px)); flex-direction:row}
+  .actions.sticky .btn{flex:1}
+  .join-line{margin-bottom:40px}
+}
 </style>
 </head>
 <body>
@@ -574,7 +611,7 @@ body{font-size:17px; line-height:1.6}
     <div>
       <h1 class="marker">Who's in the room</h1>
       <p class="event-line" id="eventLine" hidden></p>
-      <p>Everyone here is raising kids and running a business. Ask about both, the good days and the hard ones. Spot yourself? Tap Edit your profile to update it or take it down.</p>
+      <p>Dads raising kids and running businesses. Ask about both, the good days and the hard ones.</p>
       <div class="hero-actions">
         <button class="btn primary" id="editBtn" type="button">Edit your profile</button>
         <button class="btn hero-ghost" type="button" data-join>Not listed? Add yourself</button>
@@ -603,8 +640,7 @@ body{font-size:17px; line-height:1.6}
   <p class="count" id="count" aria-live="polite"></p>
   <div class="grid" id="grid"><p class="empty">Loading the room…</p></div>
   <section class="unclaimed" id="unclaimed" hidden aria-label="Profiles still to claim"></section>
-  <div class="join-cta"><p><strong>Not on the list?</strong> Ask to be added and you can set up your profile once an organizer approves it.</p>
-    <button type="button" class="btn ghost" data-join>Ask to be added</button></div>
+  <p class="join-line">Not on the list? <button type="button" class="btn link inline" data-join>Add yourself</button></p>
 </main>
 
 <dialog id="editDlg" aria-label="Edit your entry"><div class="dlg" id="editBody"></div></dialog>
@@ -944,34 +980,36 @@ function placeLine(e){
 
 function detailHTML(e){
   const pairs = pairingsFor(e);
-  const chips = (items, cls) => items.length ? `<ul class="chips-row ${cls || ""}">${items.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+  const line = (label, items, cls) => items && items.length
+    ? `<p class="nt-tags ${cls || ""}"><span class="nt-tl">${label}</span>${items.map(x => `<span class="nt-tag">${esc(x)}</span>`).join("")}</p>` : "";
+  const ask = [...(e.askHome || []), ...(e.askWork || [])];
   return `
     <div class="nt-cols">
       <section class="nt-sec">
         <h3 class="nt-label">At home</h3>
         ${plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : `<p class="missing">Nothing here yet.</p>`}
-        ${(e.kidsInto || []).length ? `<p class="nt-sub">Kids are into</p>${chips(e.kidsInto)}` : ""}
-        ${(e.hobbies || []).length ? `<p class="nt-sub">Off the clock</p>${chips(e.hobbies)}` : ""}
-        ${e.askHome.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askHome)}` : ""}
+        ${line("Kids into", e.kidsInto)}
+        ${line("Off the clock", e.hobbies)}
       </section>
       <section class="nt-sec">
-        <h3 class="nt-label">At work${e.company ? ` <span class="nt-co">${esc(e.company)}</span>` : ""}</h3>
+        <h3 class="nt-label">At work</h3>
+        ${e.company ? `<p class="nt-co">${esc(e.company)}</p>` : ""}
         ${stageLine(e) ? `<p class="nt-stage">${stageLine(e)}</p>` : ""}
         ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
-        ${(e.skills || []).length ? `<p class="nt-sub">Can help with</p>${chips(e.skills)}` : ""}
-        ${(e.needHelp || []).length ? `<p class="nt-sub">Could use help with</p>${chips(e.needHelp, "need")}` : ""}
-        ${e.askWork.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askWork)}` : ""}
+        ${line("Can help with", (e.skills && e.skills.length) ? e.skills : (SEED_TAGS[e.id] || ["", []])[1])}
+        ${line("Looking for help with", e.needHelp, "need")}
       </section>
     </div>
+    ${ask.length ? `<div class="nt-ask">${line("Ask him about", ask)}</div>` : ""}
     ${pairs.length ? `<section class="nt-pairs">
       <h3 class="nt-label">You should meet</h3>
       <ul class="mini-tags">${pairs.map(p => `<li><button type="button" class="mini-tag" data-goto="${esc(p.o.id)}">
         <span class="mini-name marker">${esc(p.o.name)}</span>
         <span class="mini-why">${esc(p.why.join(" · "))}</span></button></li>`).join("")}</ul>
     </section>` : ""}
-    ${linksHTML(e) ? `<section class="nt-find"><h3 class="nt-label">Find him</h3>${linksHTML(e)}</section>` : ""}
-    <div class="nt-foot-row"><button type="button" class="btn link" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
-      <button type="button" class="btn ghost sm nt-close" data-toggle="${esc(e.id)}">Show less</button></div>`;
+    ${linksHTML(e) ? `<div class="nt-find">${linksHTML(e)}</div>` : ""}
+    <div class="nt-foot-row"><button type="button" class="btn link small" data-edit="${esc(e.id)}">Is this you? Edit</button>
+      <button type="button" class="btn link small nt-close" data-toggle="${esc(e.id)}">Show less</button></div>`;
 }
 
 function stageLine(e){
@@ -1101,76 +1139,66 @@ function kidRow(k){
 
 function profileFieldsHTML(src){
   const ind = src.industry || (SEED_TAGS[src.id] || [""])[0] || "";
+  const setup = (src.setup && src.setup.length) ? src.setup : (SEED_SETUP[src.id] || []);
+  const skills = (src.skills && src.skills.length) ? src.skills : (SEED_TAGS[src.id] || ["", []])[1];
+  const ask = [...(src.askHome || []), ...(src.askWork || [])];
+  const sec = (title, sub, body, isOpen) => `<details class="fsec" ${isOpen ? "open" : ""}><summary><span class="fsec-t">${title}</span><span class="fsec-s">${sub}</span></summary><div class="fsec-b">${body}</div></details>`;
   return `
       ${AI_ON ? `<section class="spaghetti">
-        <h3>Throw spaghetti at the wall</h3>
-        <p class="hint">Where you live, where you grew up, what you do, and a bit about your kids: what's great and what's hard right now. Don't worry about wording. We'll turn it into a short profile you can tweak.</p>
-        <textarea id="fStory" rows="6" maxlength="3000" placeholder="Grew up in Cleveland, live in Arvada now. Run a roofing company with 12 guys, mostly residential. Hiring is the hard part lately. Two girls, 6 and 9, both obsessed with soccer…">${esc(src.story || "")}</textarea>
+        <h3>Start here: tell us about you</h3>
+        <p class="hint">Where you live and grew up, what you do, your kids, what's great and what's hard. Any order. We'll write it up.</p>
+        <textarea id="fStory" rows="5" maxlength="3000" placeholder="Grew up in Cleveland, live in Arvada now. Run a roofing company with 12 guys. Hiring is the hard part lately. Two girls, 6 and 9, both obsessed with soccer…">${esc(src.story || "")}</textarea>
         <button type="button" class="btn primary sm" data-ai>Write my profile from this</button>
         <p class="ai-status" id="aiStatus" role="status"></p>
-      </section>
-      <p class="form-divider"><span>Then check the details</span></p>` : ""}
-      <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required autocomplete="name" value="${esc(src.name)}"></div>
-      <div class="two">
-        <div class="field"><label for="fLives">Where you live</label><input id="fLives" maxlength="60" placeholder="Arvada, CO" value="${esc(src.livesIn || "")}"></div>
-        <div class="field"><label for="fGrew">Where you grew up</label><input id="fGrew" maxlength="60" placeholder="Cleveland, OH" value="${esc(src.grewUp || "")}"></div>
-      </div>
+      </section>` : ""}
 
-      <fieldset class="group home">
-        <legend>At home</legend>
-        <div class="field"><span class="label">Your kids</span>
-          <span class="hint">Use 0 for babies under a year. Leave the age blank if you'd rather not share it.</span>
+      ${sec("The basics", "Name and where you're from", `
+        <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required autocomplete="name" value="${esc(src.name)}"></div>
+        <div class="two">
+          <div class="field"><label for="fLives">Where you live</label><input id="fLives" maxlength="60" placeholder="Arvada, CO" value="${esc(src.livesIn || "")}"></div>
+          <div class="field"><label for="fGrew">Where you grew up</label><input id="fGrew" maxlength="60" placeholder="Cleveland, OH" value="${esc(src.grewUp || "")}"></div>
+        </div>`, true)}
+
+      ${sec("Kids and home", "Ages, what they're into, life lately", `
+        <div class="field"><span class="label">Kids</span><span class="hint">Use 0 for babies. Leave an age blank to keep it private.</span>
           <div id="kidList">${(src.kids.length ? src.kids : [null]).map(kidRow).join("")}</div>
-          <button type="button" class="btn ghost sm addkid" data-addkid>Add a kid</button>
-        </div>
-        <div class="field"><label for="fHome">Life at home</label>
-          <span class="hint">What are the kids into? What's been the best part lately, and the hardest?</span>
-          <textarea id="fHome" maxlength="1200">${esc(src.home)}</textarea></div>
-        <div class="field"><label for="fKidsInto">Kids are into</label><span class="hint">Sports, activities, obsessions. Separate with commas.</span>
-          <input id="fKidsInto" placeholder="soccer, dance, minecraft" value="${esc((src.kidsInto || []).join(", "))}"></div>
-        <div class="field"><label for="fHobbies">What I do for me</label><span class="hint">Off the clock, when you get the chance.</span>
-          <input id="fHobbies" placeholder="fishing, lifting, guitar" value="${esc((src.hobbies || []).join(", "))}"></div>
-        <div class="field"><label for="fAskHome">Ask me about</label><span class="hint">Dad-life conversation starters, separated by commas</span>
-          <input id="fAskHome" value="${esc(src.askHome.join(", "))}"></div>
-      </fieldset>
+          <button type="button" class="btn ghost sm addkid" data-addkid>Add a kid</button></div>
+        <div class="field"><label for="fKidsInto">Kids are into</label><input id="fKidsInto" placeholder="soccer, dance, minecraft" value="${esc((src.kidsInto || []).join(", "))}"></div>
+        <div class="field"><label for="fHome">Life at home</label><span class="hint">The best part lately, and the hardest.</span>
+          <textarea id="fHome" rows="3" maxlength="1200">${esc(src.home)}</textarea></div>
+        <div class="field"><label for="fHobbies">What you do for you</label><input id="fHobbies" placeholder="fishing, lifting, guitar" value="${esc((src.hobbies || []).join(", "))}"></div>`, true)}
 
-      <fieldset class="group">
-        <legend>At work</legend>
+      ${sec("Work", "Your business and where you could use a hand", `
         <div class="two">
           <div class="field"><label for="fCo">What you run</label><input id="fCo" maxlength="100" placeholder="Business name" value="${esc(src.company)}"></div>
           <div class="field"><label for="fInd">Industry</label><select id="fInd"><option value="">Pick one</option>${INDUSTRIES.map(x => `<option ${x === ind ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
         </div>
+        <div class="field"><label for="fWork">Life at work</label><span class="hint">What you do, and what's going well or keeping you up. **Bold** your company name with asterisks.</span>
+          <textarea id="fWork" rows="3" maxlength="1200">${esc(src.work)}</textarea></div>
+        <div class="field"><label for="fSkills">I can help with</label><input id="fSkills" placeholder="sales, hiring, franchising" value="${esc(skills.join(", "))}"></div>
+        <div class="field"><label for="fNeed">I could use help with</label><input id="fNeed" placeholder="cash flow, delegating" value="${esc((src.needHelp || []).join(", "))}"></div>`, true)}
+
+      ${sec("Business details", "Team size, years, how it fits with family", `
         <div class="three">
           <div class="field"><label for="fTeam">Team size</label><select id="fTeam"><option value="">Pick one</option>${TEAM_SIZES.map(x => `<option ${x === src.teamSize ? "selected" : ""}>${x}</option>`).join("")}</select></div>
           <div class="field"><label for="fYears">Years in it</label><input id="fYears" type="number" min="0" max="80" inputmode="numeric" value="${src.years ?? ""}"></div>
           <label class="check-inline"><input type="checkbox" id="fSerial" ${src.serial ? "checked" : ""}> Not my first business</label>
         </div>
-        <div class="field"><span class="label">How it fits with family</span>
-          <div class="checks">${Object.entries(SETUPS).map(([k, l]) => `<label class="check-pill"><input type="checkbox" value="${k}" ${((src.setup && src.setup.length ? src.setup : SEED_SETUP[src.id] || [])).includes(k) ? "checked" : ""}> ${l}</label>`).join("")}</div></div>
-        <div class="field"><label for="fWork">Life at work</label>
-          <span class="hint">What you do and who it's for. What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
-          <textarea id="fWork" maxlength="1200">${esc(src.work)}</textarea></div>
-        <div class="field"><label for="fSkills">I can help with</label><span class="hint">What other owners could ask you about. Separate with commas.</span>
-          <input id="fSkills" placeholder="sales, hiring, franchising" value="${esc((src.skills && src.skills.length ? src.skills : (SEED_TAGS[src.id] || ["", []])[1]).join(", "))}"></div>
-        <div class="field"><label for="fNeed">I could use help with</label><span class="hint">What you'd love advice on right now. We'll point you to dads who can help.</span>
-          <input id="fNeed" placeholder="hiring, cash flow, delegating" value="${esc((src.needHelp || []).join(", "))}"></div>
-        <div class="field"><label for="fAskWork">Ask me about</label><span class="hint">Business conversation starters, separated by commas</span>
-          <input id="fAskWork" value="${esc(src.askWork.join(", "))}"></div>
-      </fieldset>
+        <div class="checks">${Object.entries(SETUPS).map(([k, l]) => `<label class="check-pill"><input type="checkbox" value="${k}" ${setup.includes(k) ? "checked" : ""}> ${l}</label>`).join("")}</div>`, !!(src.teamSize || src.years != null || src.serial || (src.setup || []).length))}
 
-      <fieldset class="group">
-        <legend>Where to find me</legend>
-        <p class="hint">Optional. Add only what you want public. Empty ones are left off your profile.</p>
-        <div id="linkList">${(src.links || []).map(linkRow).join("")}</div>
-        <button type="button" class="btn ghost sm addkid" data-addlink>Add a link</button>
-      </fieldset>
+      ${sec("Conversation starters and links", "Optional", `
+        <div class="field"><label for="fAsk">Ask me about</label><span class="hint">Anything you'd love to talk about. Separate with commas.</span>
+          <input id="fAsk" value="${esc(ask.join(", "))}"></div>
+        <div class="field"><span class="label">Where to find me</span><span class="hint">Only what you want public.</span>
+          <div id="linkList">${(src.links || []).map(linkRow).join("")}</div>
+          <button type="button" class="btn ghost sm addkid" data-addlink>Add a link</button></div>`, false)}
 `;
 }
 
 function readProfile(){
   return {
-    name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAskHome").value),
-    company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: splitList($("#fAskWork").value), links: readLinks(),
+    name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAsk").value),
+    company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: [], links: readLinks(),
     livesIn: $("#fLives").value.trim(), grewUp: $("#fGrew").value.trim(), industry: $("#fInd").value,
     skills: splitList($("#fSkills").value), story: $("#fStory") ? $("#fStory").value.trim() : "",
     needHelp: splitList($("#fNeed").value), teamSize: $("#fTeam").value,
@@ -1186,13 +1214,16 @@ function fillProfile(p){
   const set = (sel, v) => { const el = $(sel); if (el && v != null && String(v).trim() !== ""){ el.value = v; el.classList.add("filled"); } };
   set("#fLives", p.livesIn); set("#fGrew", p.grewUp); set("#fHome", p.home); set("#fCo", p.company); set("#fWork", p.work);
   if (p.industry) set("#fInd", p.industry);
-  if (p.askHome && p.askHome.length) set("#fAskHome", p.askHome.join(", "));
-  if (p.askWork && p.askWork.length) set("#fAskWork", p.askWork.join(", "));
+  const ask = [...(p.askHome || []), ...(p.askWork || [])];
+  if (ask.length) set("#fAsk", ask.join(", "));
+  // open any section the writer filled
+  editBody.querySelectorAll(".fsec").forEach(d => { if (d.querySelector(".filled, .checks input:checked, #fSerial:checked")) d.open = true; });
   if (p.skills && p.skills.length) set("#fSkills", p.skills.join(", "));
   if (p.needHelp && p.needHelp.length) set("#fNeed", p.needHelp.join(", "));
   if (p.kidsInto && p.kidsInto.length) set("#fKidsInto", p.kidsInto.join(", "));
   if (p.hobbies && p.hobbies.length) set("#fHobbies", p.hobbies.join(", "));
   if (p.teamSize) set("#fTeam", p.teamSize);
+  if (p.kids && p.kids.length) editBody.querySelectorAll(".fsec")[1] && (editBody.querySelectorAll(".fsec")[1].open = true);
   if (p.years != null) set("#fYears", p.years);
   if (p.serial) $("#fSerial").checked = true;
   (p.setup || []).forEach(k => { const c = editBody.querySelector(`.checks input[value="${k}"]`); if (c) c.checked = true; });
@@ -1289,7 +1320,7 @@ function renderEdit(){
       <hr class="divider">
       ${profileFieldsHTML(p)}
       ${err}
-      <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
+      <div class="actions sticky"><button type="button" class="btn ghost" data-cancel>Cancel</button>
         <button class="btn primary" ${dis}>${ed.busy ? "Saving…" : p.id ? "Save" : "Add person"}</button></div>
     </form>`;
     editBody.scrollTop = 0; editDlg.scrollTop = 0;
@@ -1319,18 +1350,14 @@ function renderEdit(){
     editBody.innerHTML = `<form id="fEntry" novalidate>
       <h2>Your profile</h2>
       <p class="as-email">Using ${esc(ed.email)} <button type="button" class="btn link inline" data-switch>Change</button></p>
-      ${!claimed ? `<p class="notice">We started your profile from what we know, and it's showing in the directory now. Fix anything that's off and add what's missing. Rather not be listed? You can hide or clear it at the bottom.</p>` : `<p class="muted">Changes show up in the directory as soon as you save.</p>`}
+      ${!claimed ? `<p class="notice">We started this from what we know, and it's already showing. Fix anything that's off. Rather not be listed? Hide it at the bottom.</p>` : ""}
       ${ed.entry.hidden ? `<p class="notice hidden-note">Your profile is hidden. Nobody else can see your name in the directory right now.</p>` : ""}
       ${profileFieldsHTML(src)}
+      <details class="fsec"><summary><span class="fsec-t">Hide or clear your profile</span><span class="fsec-s">Takes effect right away</span></summary>
+        <div class="fsec-b"><div id="manage">${manageHTML()}</div></div></details>
       ${err}
-      <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
-        <button class="btn primary" ${dis}>${ed.busy ? "Saving…" : "Save changes"}</button></div>
-
-      <hr class="divider">
-      <fieldset class="group manage">
-        <legend>Hide or clear your profile</legend>
-        <div id="manage">${manageHTML()}</div>
-      </fieldset>
+      <div class="actions sticky"><button type="button" class="btn ghost" data-cancel>Cancel</button>
+        <button class="btn primary" ${dis}>${ed.busy ? "Saving…" : "Save"}</button></div>
     </form>`;
     editBody.scrollTop = 0; editDlg.scrollTop = 0;
   } else {
@@ -1491,9 +1518,8 @@ async function renderAdmin(){
       <h3 id="evTitle">Current event</h3>
       ${event ? `<p><strong>${esc(event.name)}</strong>${event.date ? ` · ${esc(event.date)}` : ""} · ${event.guests} guests on the list</p>`
               : `<p class="muted">No event set, so everyone in the directory is showing.</p>`}
-      <p class="muted small">Only this event's guests show on the page. Everyone else stays saved, profiles included, and reappears when they're on a future guest list.</p>
+      <p class="muted small">Only this event's guests show. Everyone else stays saved for future events.</p>
       <div id="lumaStatus">${lumaStatusHTML()}</div>
-      <div id="addBox">${addHTML()}</div>
       <div id="importBox">${importHTML()}</div>
     </section>
     <section aria-labelledby="pplTitle" class="ppl-section">
@@ -1501,7 +1527,7 @@ async function renderAdmin(){
       ${people ? `<div class="ppl-tools">
           <input type="search" id="pplQ" placeholder="Filter by name, business, email" aria-label="Filter people" value="${esc(pplQ)}">
           ${peopleHasEvent ? `<label class="ppl-check"><input type="checkbox" id="pplOnly" ${pplOnly ? "checked" : ""}> Only this event's guests</label>` : ""}
-          <button type="button" class="btn ghost sm" data-person-new>New person</button>
+          <button type="button" class="btn primary sm" data-person-new>Add a person</button>
         </div>
         <div id="pplTable">${peopleTableHTML()}</div>`
         : `<p class="notice">Paste the latest Code.gs into Apps Script and deploy a new version to edit everyone here.</p>`}
@@ -1972,7 +1998,7 @@ function makeDemo(){
     },
     adminEvent({ key }){
       if (key !== "demo") throw new Error("That admin key is wrong.");
-      return { luma: Object.assign({ configured:true }, lumaState), event: { name:event.name, date:event.date, url:event.url, guests:event.guests } };
+      return { luma: Object.assign({ configured:false }, lumaState), event: { name:event.name, date:event.date, url:event.url, guests:event.guests } };
     },
     adminLumaEvents({ key }){
       if (key !== "demo") throw new Error("That admin key is wrong.");
