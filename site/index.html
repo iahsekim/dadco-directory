@@ -625,6 +625,64 @@ body{font-size:17px; line-height:1.6}
   .hero{padding:16px 16px 18px}
   .nt-sum{padding:10px 14px 0}
 }
+
+/* ---------- tabs ---------- */
+.tabs{display:flex; gap:4px; margin-bottom:10px; border-bottom:2px solid var(--hair)}
+.tab{border:0; background:none; padding:8px 14px 10px; font-weight:700; font-size:1rem; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px}
+.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--rust)}
+.tab:hover{color:var(--ink)}
+#dirTools[hidden], #dirView[hidden], #discoverView[hidden]{display:none}
+
+/* ---------- discover ---------- */
+.discover{padding-top:14px; padding-bottom:56px}
+.disc-head{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:16px}
+.disc-head h2{margin:0; font-size:2rem; color:var(--marker)}
+.disc-head p{margin:2px 0 0}
+.disc-grid{list-style:none; margin:0; padding:0; display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.dc{perspective:1000px; min-height:230px}
+.dc-inner{position:relative; height:100%; min-height:230px; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.dc.flipped .dc-inner{transform:rotateY(180deg)}
+.dc-front, .dc-back{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border:2px solid var(--outline); border-radius:16px; padding:20px; display:flex; flex-direction:column; text-align:left}
+.dc-front{all:unset; box-sizing:border-box; position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border:2px solid var(--outline); border-radius:16px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform .15s}
+.dc-front:hover{transform:rotate(-.8deg)}
+.dc-front:focus-visible{outline:3px solid var(--rust); outline-offset:3px}
+.dc-q{font-size:1.18rem; line-height:1.4; font-weight:600}
+.dc-q::before{content:"“"; display:block; font-family:"Permanent Marker", cursive; font-size:2.6rem; line-height:.8; margin-bottom:4px; opacity:.9}
+.dc-hint{font-size:.85rem; font-weight:700; letter-spacing:.02em; opacity:.85; margin-top:14px}
+.tone-0 .dc-front{background:var(--card); color:var(--ink)} .tone-0 .dc-q::before{color:var(--rust)}
+.tone-1 .dc-front{background:var(--rust); color:#fff; border-color:var(--outline)}
+.tone-2 .dc-front{background:var(--night); color:var(--night-ink); border-color:var(--night)} .tone-2 .dc-q::before{color:var(--rust)}
+.dc-back{background:var(--card); transform:rotateY(180deg); border-top:6px solid var(--rust); justify-content:center; gap:6px}
+.dc-name{font-size:1.9rem; line-height:1.1; color:var(--marker); padding-bottom:6px; border-bottom:2px solid var(--hair)}
+.dc-kids{font-size:.9rem; color:var(--muted)}
+.dc-actions{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:10px}
+.dc:not(.flipped) .dc-back{pointer-events:none}
+.dc.flipped .dc-front{pointer-events:none}
+@media (prefers-reduced-motion:reduce){ .dc-inner{transition:none} .dc-front:hover{transform:none} }
+@media (max-width:640px){
+  .disc-grid{grid-template-columns:1fr 1fr; gap:10px}
+  .dc, .dc-inner{min-height:210px}
+  .dc-front, .dc-back{padding:14px}
+  .dc-front{padding:14px}
+  .dc-q{font-size:1rem}
+  .dc-q::before{font-size:2rem}
+  .dc-name{font-size:1.4rem}
+  .tabs{margin-bottom:8px}
+}
+@media (max-width:360px){ .disc-grid{grid-template-columns:1fr} }
+/* both faces share one grid cell, so the taller face sets the card height */
+.dc-inner{display:grid}
+.dc-front, .dc-back{position:relative; inset:auto; grid-area:1 / 1; min-height:230px}
+.dc-back{justify-content:flex-start; padding-top:18px}
+.dc-actions{flex-direction:column; align-items:flex-start; gap:2px}
+@media (max-width:640px){
+  .dc-front, .dc-back{min-height:200px}
+  .dc-back{padding:14px}
+  .dc-name{font-size:1.3rem}
+  .dc-kids{font-size:.82rem}
+  .dc-actions .btn.primary{padding:.45rem .7rem; font-size:.85rem}
+  .disc-head{align-items:center}
+}
 </style>
 </head>
 <body>
@@ -652,7 +710,11 @@ body{font-size:17px; line-height:1.6}
 
 <div class="toolbar">
   <div class="wrap">
-    <div class="search-row">
+    <div class="tabs" role="tablist" aria-label="View">
+      <button type="button" role="tab" class="tab" id="tabDir" aria-selected="true" aria-controls="dirView" data-tab="directory">Directory</button>
+      <button type="button" role="tab" class="tab" id="tabDisc" aria-selected="false" aria-controls="discoverView" data-tab="discover">Discover</button>
+    </div>
+    <div class="search-row" id="dirTools">
       <input class="search" id="search" type="search" placeholder="Search names, towns, businesses, skills" aria-label="Search the directory">
       <select id="filterSel" class="filter-sel" aria-label="Filter"></select>
       <button type="button" class="btn ghost expand-all" id="expandAll" aria-pressed="false">Expand all</button>
@@ -662,12 +724,21 @@ body{font-size:17px; line-height:1.6}
   </div>
 </div>
 
-<main class="wrap">
+<main class="wrap" id="dirView" role="tabpanel" aria-labelledby="tabDir">
   <p class="count vh" id="count" aria-live="polite"></p>
   <div class="grid" id="grid"><p class="empty">Loading the room…</p></div>
   <section class="unclaimed" id="unclaimed" hidden aria-label="Profiles still to claim"></section>
   <p class="join-line">Not on the list? <button type="button" class="btn link inline" data-join>Add yourself</button></p>
 </main>
+
+<section class="wrap discover" id="discoverView" role="tabpanel" aria-labelledby="tabDisc" hidden>
+  <div class="disc-head">
+    <div><h2 class="marker">Guess who</h2>
+      <p class="muted">Something interesting about someone in the room. Tap a card to see who it is.</p></div>
+    <button type="button" class="btn ghost" id="shuffleBtn">Shuffle</button>
+  </div>
+  <ul class="disc-grid" id="discGrid"></ul>
+</section>
 
 <dialog id="editDlg" aria-label="Edit your entry"><div class="dlg" id="editBody"></div></dialog>
 
@@ -821,6 +892,7 @@ async function load(){
     return;
   }
   renderFilters(); render();
+  if (typeof tab !== "undefined" && tab === "discover") renderDiscover(); else if ($("#discGrid")) $("#discGrid").innerHTML = "";
 }
 
 function renderEvent(ev){
@@ -2101,7 +2173,106 @@ if (DEMO){
   const bar = $("#demoBar"); bar.hidden = false;
   bar.innerHTML = `Demo mode: edits live only in this tab. Add <b>#admin</b> to the URL for organizer tools (key: <b>demo</b>).`;
 }
-load();
+
+/* ---------- Discover: lead with something interesting, reveal the person ---------- */
+const FACTS = {
+  "ben-lozano":["Owns a pool and spa leak detection franchise","Girl dad who still makes time for cheer, dance, and picnics"],
+  "bryan-fillmer":["Helps companies decide what AI should handle and what should stay human","Gym rat and fisherman with sons who are 21 and 15"],
+  "cody-caplinger":["Built a solar company into an eight-figure sales organization","Went from fintech and capital markets to building a peptides brand"],
+  "dave-ambrose":["Left 20+ years in tech to help grow his wife's pottery side hustle into two studios","Plays in a band called The Disasters","Handles HR and payroll for the family business, and the plumbing too"],
+  "eric-gonzalez":["Fractional data and AI executive who just went all in on his own company","Recently moved his family to Colorado with a 3-year-old and a 1-year-old"],
+  "greg-narain":["Serial founder who's been through both Y Combinator and Techstars","Has been a CEO, a CTO, and a product lead, and is building in AI now"],
+  "harrison-brodwin":["A counselor who thinks dads probably need therapy too","Runs his own practice focused on men's mental health"],
+  "jorge-pongo":["Traded SaaS sales leadership for the coffee business","Currently surviving life with a 2-year-old and a 4-year-old"],
+  "lucas-droessler":["Calls himself a professional “solutioner”","Runs a tech studio that builds cloud, data, and web platforms"],
+  "mike-shai":["Started a wrestling education company with his wife","Product designer turned founder of this very meetup"],
+  "solomon-luna":["Installs security cameras and access control, with a background in art and home design"],
+  "tomas-marin":["Has spent 20 years on the part business owners ignore until it gets expensive: payment fees"],
+  "trevor-schneider":["Built a home-services company that creates flexible jobs for single dads"],
+  "tyler-schell":["Ran experiential marketing for Honda, TikTok, and UNICEF before going into ecommerce","Brand-new dad of a 1-year-old"],
+  "michael-weber":["Three-time B2B SaaS founder who helps teams actually adopt AI"],
+  "christopher-womack":["Ran a bar and grille and food trucks, and has a master's in finance and risk"],
+  "matthew-krekeler":["Raising four daughters, and hosts a podcast about it"],
+  "william-kowalski":["Co-founded an aerospace company that launched two satellites, then sold it","Had both kids while he and his wife were building a space company"],
+  "isaac-pacheco":["Makes custom suits and dreams of opening a speakeasy-style meadery"],
+  "corey-montez":["Engineer and industrial designer who turns ideas into physical products"],
+  "ignacio-martinez":["Helps small businesses get off the ground, and swears by discipline"],
+  "win-nguyen":["Helps agency owners build companies that don't depend on them"],
+  "ryan-johns":["Strength coach with in-person, virtual, and on-demand training"],
+  "jeremiah-buschmann":["Builds decks, remodels homes, and coats floors"],
+  "adam-stewart":["Master Electrician who takes the jobs other electricians pass over"],
+  "coleman":["DJ, event host, and professional hype man"]
+};
+const NUM = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
+// Facts written from what people put in their profiles, so new and edited profiles show up too.
+function autoFacts(e){
+  const out = [], lst = a => a.length > 1 ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
+  const n = e.kids.length, girls = n && e.kids.every(k => k.is === "girl"), boys = n && e.kids.every(k => k.is === "boy");
+  if (setupOf(e).includes("spouse") && e.company) out.push(`Runs ${e.company} with his wife`);
+  if (n >= 3) out.push(`Dad of ${NUM[n] || n}${girls ? " girls" : boys ? " boys" : ""}${e.company ? `, while running ${e.company}` : ""}`);
+  if (e.grewUp && e.livesIn) out.push(`Grew up in ${e.grewUp}, now lives in ${e.livesIn}`);
+  if ((e.kidsInto || []).length) out.push(`Has kids who are into ${lst(e.kidsInto.slice(0, 3))}`);
+  if ((e.hobbies || []).length) out.push(`Off the clock, he's into ${lst(e.hobbies.slice(0, 2))}`);
+  if (e.serial && e.years != null) out.push(`On his second act or more as a founder, ${e.years} years into this one`);
+  if ((e.needHelp || []).length) out.push(`Would love advice on ${lst(e.needHelp.slice(0, 2))}`);
+  if (setupOf(e).includes("dayjob")) out.push("Building his business on the side, around a day job");
+  return out;
+}
+function factsFor(e){ return [...(FACTS[e.id] || []), ...autoFacts(e)]; }
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+function renderDiscover(){
+  const deck = shuffle(claimedOnly().map(e => { const f = factsFor(e); return f.length ? { e, fact: f[Math.floor(Math.random() * f.length)] } : null; }).filter(Boolean));
+  $("#discGrid").innerHTML = deck.length ? deck.map(({ e, fact }, i) => `
+    <li class="dc tone-${i % 3}" data-id="${esc(e.id)}">
+      <div class="dc-inner">
+        <button type="button" class="dc-front" data-flip aria-label="${esc(fact)}. Reveal who it is.">
+          <span class="dc-q">${esc(fact)}</span>
+          <span class="dc-hint">Who is it? <span aria-hidden="true">Tap to reveal</span></span>
+        </button>
+        <div class="dc-back" aria-hidden="true">
+          <span class="nt-hi"><b>Hello</b> my name is</span>
+          <span class="dc-name marker">${esc(e.name)}</span>
+          <span class="dc-kids">${esc(kidsLabel(e))}${e.company ? ` · ${esc(e.company)}` : ""}</span>
+          <span class="dc-actions"><button type="button" class="btn primary sm" data-see="${esc(e.id)}" tabindex="-1">See his profile</button>
+            <button type="button" class="btn link small" data-flip tabindex="-1">Flip back</button></span>
+        </div>
+      </div>
+    </li>`).join("") : `<li class="empty">Profiles will show up here once people fill them in.</li>`;
+}
+
+$("#discGrid").addEventListener("click", ev => {
+  const see = ev.target.closest("[data-see]");
+  if (see){ setTab("directory"); showPerson(see.dataset.see); return; }
+  const f = ev.target.closest("[data-flip]"); if (!f) return;
+  const card = f.closest(".dc"), on = !card.classList.contains("flipped");
+  card.classList.toggle("flipped", on);
+  card.querySelector(".dc-back").setAttribute("aria-hidden", String(!on));
+  card.querySelectorAll(".dc-back button").forEach(b => b.tabIndex = on ? 0 : -1);
+  card.querySelector(".dc-front").tabIndex = on ? -1 : 0;
+  (on ? card.querySelector("[data-see]") : card.querySelector(".dc-front")).focus({ preventScroll: true });
+});
+$("#shuffleBtn").addEventListener("click", renderDiscover);
+
+let tab = "directory";
+function setTab(x){
+  tab = x === "discover" ? "discover" : "directory";
+  const d = tab === "discover";
+  $("#dirView").hidden = d; $("#dirTools").hidden = d; $("#discoverView").hidden = !d;
+  $("#tabDir").setAttribute("aria-selected", String(!d)); $("#tabDisc").setAttribute("aria-selected", String(d));
+  if (d && !$("#discGrid").children.length) renderDiscover();
+  if (location.hash !== "#admin") history.replaceState(null, "", d ? "#discover" : location.pathname + location.search);
+}
+document.querySelector(".tabs").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-tab]"); if (!b) return;
+  setTab(b.dataset.tab); window.scrollTo({ top: document.querySelector(".toolbar").offsetTop, behavior: "smooth" });
+});
+document.querySelector(".tabs").addEventListener("keydown", ev => {
+  if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+  const next = tab === "directory" ? "discover" : "directory"; setTab(next); $(next === "discover" ? "#tabDisc" : "#tabDir").focus();
+});
+
+load().then(() => { if (location.hash === "#discover") setTab("discover"); });
 renderAdmin();
 })();
 </script>
