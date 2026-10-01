@@ -639,7 +639,10 @@ function currentEvent_() {
 }
 
 function publicEvent_(ev) {
-  return ev ? { name: String(ev.name || ''), url: String(ev.url || ''), date: String(ev.date || '') } : null;
+  if (!ev) return null;
+  // Sheets turns typed dates like "Sep 30" into Date values; show them short.
+  const d = ev.date instanceof Date ? Utilities.formatDate(ev.date, Session.getScriptTimeZone(), 'EEE, MMM d') : String(ev.date || '');
+  return { name: String(ev.name || ''), url: String(ev.url || ''), date: d };
 }
 
 // Entry ids on the current event's guest list, or null (show everyone) if no event is set.
