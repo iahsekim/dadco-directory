@@ -487,71 +487,69 @@ body{font-size:17px; line-height:1.6}
   .expand-all{flex:0 0 auto; padding:.5rem .8rem}
 }
 
-/* ---------- "Hello, my name is" tags ---------- */
-.nt-list{display:flex; flex-direction:column; gap:24px; max-width:780px; margin:18px auto 64px}
-.toolbar > .wrap, main > .count, .join-cta, .unclaimed{max-width:780px; margin-left:auto; margin-right:auto}
-.toolbar > .wrap{padding:0 20px; box-sizing:content-box}
-main > .count{display:block}
-.toolbar .search, .toolbar .expand-all{height:48px; min-height:48px; padding-top:0; padding-bottom:0; line-height:1}
-.toolbar .search-row{align-items:center}
-.nt{background:var(--card); border:2.5px solid var(--outline); border-radius:18px; overflow:hidden; scroll-margin-top:150px; transition:box-shadow .2s}
-.nt-band{background:var(--rust); color:#fff; text-align:center; padding:12px 16px 11px; display:flex; flex-direction:column; align-items:center; line-height:1; border-bottom:2.5px solid var(--outline)}
-.nt-hello{font-weight:800; font-size:1.9rem; letter-spacing:.08em; text-transform:uppercase}
-.nt-my{font-size:.86rem; font-weight:600; letter-spacing:.03em; margin-top:5px}
-.nt-sum{all:unset; box-sizing:border-box; display:block; width:100%; cursor:pointer; padding:20px 26px 0; color:var(--ink)}
-.nt-sum:focus-visible{outline:3px solid var(--rust); outline-offset:-4px; border-radius:0 0 16px 16px}
-.nt-name{display:block; text-align:center; font-size:clamp(2.1rem,5.2vw,2.9rem); line-height:1.08; color:var(--marker); padding:2px 0 12px; margin:0 8% 12px; border-bottom:2px solid var(--hair)}
-.nt-meta{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px 16px; font-size:.95rem}
-.nt-kids{display:inline-flex; align-items:center; gap:6px}
+/* ---------- skinny "Hello, my name is" rows ---------- */
+.nt-list{display:flex; flex-direction:column; gap:14px; margin:14px 0 56px}
+.nt{background:var(--card); border:2.5px solid var(--outline); border-radius:14px; overflow:hidden; scroll-margin-top:150px; transition:box-shadow .2s}
+.nt-band{background:var(--rust); color:#fff; display:flex; align-items:baseline; gap:8px; padding:5px 18px 4px; border-bottom:2px solid var(--outline); line-height:1.2}
+.nt-hello{font-weight:800; font-size:.95rem; letter-spacing:.1em; text-transform:uppercase}
+.nt-my{font-size:.8rem; font-weight:600}
+.nt-sum{all:unset; box-sizing:border-box; width:100%; cursor:pointer; color:var(--ink);
+  display:grid; grid-template-columns:minmax(230px,300px) minmax(0,1fr) auto; gap:22px; align-items:center; padding:12px 18px 14px}
+.nt-sum:focus-visible{outline:3px solid var(--rust); outline-offset:-4px}
+.nt-who{display:flex; flex-direction:column; min-width:0}
+.nt-name{font-size:1.75rem; line-height:1.1; color:var(--marker); padding:0 0 6px; border-bottom:2px solid var(--hair)}
+.nt-meta{display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; margin-top:8px; font-size:.88rem}
+.nt-kids{display:inline-flex; align-items:center; gap:5px}
 .nt-kids-label{font-weight:700; margin-right:2px}
 .nt-kids.none .nt-kids-label{font-weight:400; font-style:italic; color:var(--muted)}
-.age-dot{min-width:30px; height:30px; padding:0 7px; border-radius:999px; border:2px solid var(--outline); display:inline-grid; place-items:center; font-size:.95rem; line-height:1; background:var(--card); color:var(--ink)}
+.age-dot{min-width:26px; height:26px; padding:0 6px; border-radius:999px; border:2px solid var(--outline); display:inline-grid; place-items:center; font-size:.85rem; line-height:1; background:var(--card); color:var(--ink)}
 .nt-place{color:var(--muted)}
-.nt-pitch{display:grid; gap:8px; margin-top:16px; padding-top:14px; border-top:1.5px dashed var(--hair)}
-.nt-line{display:grid; grid-template-columns:58px 1fr; gap:12px; align-items:baseline; font-size:1rem; line-height:1.5}
-.nt-k{font-size:.72rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
+.nt-pitch{display:grid; gap:6px; padding-left:22px; border-left:1.5px dashed var(--hair); min-width:0}
+.nt-line{display:grid; grid-template-columns:52px 1fr; gap:10px; align-items:baseline; font-size:.97rem; line-height:1.5}
+.nt-k{font-size:.7rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
 .nt-v{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .nt-v strong{font-weight:600}
-.nt.is-open .nt-pitch{display:none}
-.nt-more{display:flex; justify-content:center; align-items:center; gap:6px; margin:18px -26px 0; padding:13px; border-top:1.5px solid var(--hair); color:var(--rust); font-weight:700; font-size:.97rem; transition:background .15s}
+.nt-more{display:flex; align-items:center; gap:4px; padding:8px 12px; border-radius:10px; color:var(--rust); font-weight:700; font-size:.92rem; white-space:nowrap; transition:background .15s}
 .nt-sum:hover .nt-more{background:var(--paper)}
 .nt-more svg{width:18px; height:18px; transition:transform .3s ease}
 .nt.is-open .nt-more svg{transform:rotate(180deg)}
+.nt.is-open{box-shadow:0 0 0 2px var(--rust)}
 .nt-detail{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s ease}
 .nt.is-open .nt-detail{grid-template-rows:1fr}
 .nt-detail-in{overflow:hidden; min-height:0}
-.nt-detail-pad{padding:8px 26px 24px}
-.nt-cols{display:grid; grid-template-columns:1fr 1fr; gap:22px 34px; padding-top:12px}
-.nt-label{margin:0 0 8px; font-size:.74rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
-.nt-co{display:block; text-transform:none; letter-spacing:0; font-size:1.06rem; font-weight:700; color:var(--ink); margin-top:5px}
+.nt-detail-pad{padding:4px 18px 20px; border-top:1.5px dashed var(--hair)}
+.nt-cols{display:grid; grid-template-columns:1fr 1fr; gap:20px 34px; padding-top:16px}
+.nt-label{margin:0 0 8px; font-size:.72rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
+.nt-co{display:block; text-transform:none; letter-spacing:0; font-size:1.04rem; font-weight:700; color:var(--ink); margin-top:5px}
 .nt-sec .prose p{margin:0 0 10px; font-size:1rem; line-height:1.6}
 .nt-sub{margin:12px 0 6px; font-size:.82rem; font-weight:700; color:var(--muted)}
 .chips-row{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px}
 .chips-row li{border:1.5px solid var(--hair); border-radius:10px; padding:4px 11px; font-size:.86rem; line-height:1.35; background:var(--paper)}
-.nt-pairs, .nt-find{margin-top:22px; padding-top:18px; border-top:1.5px dashed var(--hair)}
-.mini-tags{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px}
-.mini-tag{all:unset; box-sizing:border-box; width:100%; height:100%; display:flex; flex-direction:column; border:2px solid var(--outline); border-radius:12px; overflow:hidden; cursor:pointer; background:var(--card); transition:transform .15s}
-.mini-tag:hover{transform:rotate(-1.2deg)}
+.nt-pairs, .nt-find{margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--hair)}
+.mini-tags{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr)); gap:10px}
+.mini-tag{all:unset; box-sizing:border-box; width:100%; height:100%; display:flex; flex-direction:column; border:2px solid var(--outline); border-radius:10px; overflow:hidden; cursor:pointer; background:var(--card); transition:transform .15s}
+.mini-tag:hover{transform:rotate(-1deg)}
 .mini-tag:focus-visible{outline:3px solid var(--rust); outline-offset:2px}
-.mini-band{background:var(--rust); color:#fff; font-weight:800; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; text-align:center; padding:4px; border-bottom:2px solid var(--outline)}
-.mini-name{font-size:1.3rem; line-height:1.15; text-align:center; padding:10px 10px 4px; color:var(--marker)}
-.mini-why{font-size:.83rem; line-height:1.4; color:var(--muted); text-align:center; padding:0 12px 12px}
-.nt-foot-row{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:20px}
+.mini-band{background:var(--rust); color:#fff; font-weight:800; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; padding:3px 10px; border-bottom:2px solid var(--outline)}
+.mini-name{font-size:1.25rem; line-height:1.15; padding:8px 10px 2px; color:var(--marker)}
+.mini-why{font-size:.83rem; line-height:1.4; color:var(--muted); padding:0 10px 10px}
+.nt-foot-row{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:18px}
 .nt-foot-row .btn.link{padding-left:0}
 .nt.flash{box-shadow:0 0 0 4px var(--rust)}
+.toolbar .search, .toolbar .expand-all{height:48px; min-height:48px; padding-top:0; padding-bottom:0; line-height:1}
+.toolbar .search-row{align-items:center}
 @media (prefers-reduced-motion:reduce){ .nt-detail, .nt-more svg, .mini-tag{transition:none} .mini-tag:hover{transform:none} }
-@media (max-width:640px){
-  .nt-list{gap:16px; margin-top:12px}
-  .nt{scroll-margin-top:170px; border-radius:16px}
-  .nt-hello{font-size:1.45rem}
-  .nt-my{font-size:.8rem}
-  .nt-sum{padding:16px 16px 0}
-  .nt-name{margin:0 2% 10px; padding-bottom:10px}
-  .nt-line{grid-template-columns:48px 1fr; gap:10px; font-size:.97rem}
-  .nt-more{margin:14px -16px 0}
-  .nt-detail-pad{padding:4px 16px 20px}
-  .nt-cols{grid-template-columns:1fr; gap:18px}
-  .mini-tags{grid-template-columns:1fr 1fr}
+@media (max-width:760px){
+  .nt-list{gap:12px}
+  .nt{scroll-margin-top:170px}
+  .nt-band{padding:4px 14px}
+  .nt-sum{grid-template-columns:1fr; gap:10px; padding:10px 14px 0}
+  .nt-name{font-size:1.5rem}
+  .nt-pitch{padding:10px 0 0; border-left:0; border-top:1.5px dashed var(--hair)}
+  .nt-line{grid-template-columns:46px 1fr; font-size:.95rem}
+  .nt-more{justify-content:center; margin:0 -14px; padding:11px; border-radius:0; border-top:1.5px solid var(--hair)}
+  .nt-detail-pad{padding:4px 14px 18px}
+  .nt-cols{grid-template-columns:1fr; gap:16px}
 }
 </style>
 </head>
@@ -942,13 +940,13 @@ function nameTag(e){
   return `<article class="nt ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
     <div class="nt-band" aria-hidden="true"><span class="nt-hello">Hello</span><span class="nt-my">my name is</span></div>
     <button type="button" class="nt-sum" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}" aria-controls="d-${esc(e.id)}">
-      <span class="nt-name marker">${esc(e.name)}</span>
-      <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}</span>
+      <span class="nt-who"><span class="nt-name marker">${esc(e.name)}</span>
+        <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}</span></span>
       <span class="nt-pitch">
         <span class="nt-line"><span class="nt-k">Home</span><span class="nt-v">${homeLine(e)}</span></span>
         <span class="nt-line"><span class="nt-k">Work</span><span class="nt-v">${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</span></span>
       </span>
-      <span class="nt-more"><span class="nt-more-txt">${isOpen ? "Show less" : `More about ${first}`}</span>
+      <span class="nt-more"><span class="nt-more-txt">${isOpen ? "Less" : "More"}</span>
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </button>
     <div class="nt-detail" id="d-${esc(e.id)}" role="region" aria-label="More about ${first}"><div class="nt-detail-in"><div class="nt-detail-pad">${detailHTML(e)}</div></div></div>
@@ -960,7 +958,7 @@ function setOpenState(id, on){
   const el = document.getElementById("p-" + id); if (!el) return;
   el.classList.toggle("is-open", on);
   const b = el.querySelector(".nt-sum"); b.setAttribute("aria-expanded", String(on));
-  el.querySelector(".nt-more-txt").textContent = on ? "Show less" : `More about ${entries.find(x => x.id === id).name.split(/\s+/)[0]}`;
+  el.querySelector(".nt-more-txt").textContent = on ? "Less" : "More";
 }
 function toggleOne(id){
   if (allOpen){ allOpen = false; claimedOnly().forEach(e => open.add(e.id)); syncExpandAll(); }
