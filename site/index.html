@@ -460,6 +460,32 @@ body{font-size:17px; line-height:1.6}
   .more{grid-template-columns:1fr}
   .tag, .row{scroll-margin-top:170px}
 }
+
+/* ---------- list-only: separate cards with breathing room ---------- */
+.list{display:flex; flex-direction:column; gap:16px; margin:14px 0 56px; border:0; border-radius:0; overflow:visible; background:none}
+.list .row{border:2.5px solid var(--outline); border-radius:14px; overflow:hidden; background:var(--card); grid-template-columns:200px minmax(0,1fr) minmax(0,260px)}
+.list .row + .row{border-top:2.5px solid var(--outline)}
+.list .row + .row .row-kids{border-top:0; margin-top:0}
+.list .row-kids{padding:16px; gap:8px}
+.list .row-main{padding:16px 20px; gap:4px}
+.list .row .name{font-size:1.6rem}
+.list .row-home{white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.list .row-work{padding:16px 20px; gap:8px}
+.list .row-more{padding:6px 22px 20px}
+.list .row.is-open{box-shadow:0 0 0 2px var(--rust)}
+@media (max-width:640px){
+  .list{gap:12px}
+  .list .row{grid-template-columns:1fr}
+  .list .row-kids{padding:9px 14px; border-right:0; border-bottom:2px solid var(--outline)}
+  .list .row-main{padding:12px 14px 2px}
+  .list .row .name{font-size:1.35rem}
+  .list .row-work{padding:4px 14px 14px; border-left:0}
+  .list .row-more{padding:4px 14px 14px}
+  .search-row{flex-wrap:nowrap}
+  .list .row-work .btn.expand{display:block; width:100%; margin-top:10px; min-height:44px}
+  .search{flex:1 1 0}
+  .expand-all{flex:0 0 auto; padding:.5rem .8rem}
+}
 </style>
 </head>
 <body>
@@ -490,14 +516,7 @@ body{font-size:17px; line-height:1.6}
     <div class="search-row">
       <input class="search" id="search" type="search" placeholder="Search names, towns, businesses, skills" aria-label="Search the directory">
       <button type="button" class="btn ghost expand-all" id="expandAll" aria-pressed="false">Expand all</button>
-      <div class="views" role="group" aria-label="Layout">
-        <button type="button" class="view-btn" data-view="cards" aria-pressed="true" aria-label="Card view">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
-          <span class="view-txt">Cards</span></button>
-        <button type="button" class="view-btn" data-view="list" aria-pressed="false" aria-label="List view">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="3" width="16" height="3.4" rx="1.2"/><rect x="2" y="8.3" width="16" height="3.4" rx="1.2"/><rect x="2" y="13.6" width="16" height="3.4" rx="1.2"/></svg>
-          <span class="view-txt">List</span></button>
-      </div>
+
     </div>
     <div class="topics" id="topics" role="group" aria-label="Filter by kids"></div>
   </div>
@@ -533,7 +552,7 @@ let AI_ON = false;
 const INDUSTRIES = ["Home services & trades","Construction & real estate","Tech & software","AI & data","Marketing, brand & media",
   "Sales","Finance & investing","Health, fitness & wellness","Food, drink & hospitality","Retail & ecommerce",
   "Consulting & professional services","Education & coaching","Creative & design","Engineering & manufacturing","Other"];
-let view = (() => { try{ return localStorage.getItem("dc_view") || ""; }catch(e){ return ""; } })() || "cards";
+const view = "list";
 
 /* ---------- utils ---------- */
 function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -694,8 +713,8 @@ function render(){
   const kids = list.reduce((n, e) => n + e.kids.length, 0);
   countEl.textContent = claimed.length ? `${list.length} ${list.length === 1 ? "profile" : "profiles"} · ${kids} kids` : "";
 
-  grid.className = view === "list" ? "list" : "grid";
-  if (list.length) grid.innerHTML = list.map(view === "list" ? row : card).join("");
+  grid.className = "list";
+  if (list.length) grid.innerHTML = list.map(row).join("");
   else {
     grid.className = "grid";
     grid.innerHTML = !claimed.length
@@ -863,21 +882,11 @@ function row(e){
       <p class="row-home">${homeLine(e)}</p>
     </div>
     <div class="row-work"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}
-      <button type="button" class="btn expand sm" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More"}</button></div>
+      <button type="button" class="btn expand sm" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More about " + esc(e.name.split(/\s+/)[0])}</button></div>
     ${isOpen ? `<div class="row-more">${detailHTML(e)}</div>` : ""}
   </article>`;
 }
 
-function setView(v){
-  view = v === "list" ? "list" : "cards";
-  try{ localStorage.setItem("dc_view", view); }catch(e){}
-  document.querySelectorAll(".view-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
-  render();
-}
-document.querySelector(".views").addEventListener("click", ev => {
-  const b = ev.target.closest(".view-btn"); if (b) setView(b.dataset.view);
-});
-document.querySelectorAll(".view-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
 $("#expandAll").addEventListener("click", ev => {
   allOpen = !allOpen; open.clear();
   ev.currentTarget.setAttribute("aria-pressed", String(allOpen));
