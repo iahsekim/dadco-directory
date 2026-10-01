@@ -30,7 +30,9 @@ const PENDING = 'Pending';
 // links column: one per line, "type: value" — types: instagram, twitter, website, phone, email, other.
 const COLS = ['id', 'email', 'name', 'kids', 'home', 'askHome', 'company', 'work', 'askWork', 'links', 'claimed', 'hidden', 'updatedAt',
   'livesIn', 'grewUp', 'industry', 'skills', 'story',
-  'needHelp', 'teamSize', 'years', 'serial', 'setup', 'kidsInto', 'hobbies'];
+  'needHelp', 'teamSize', 'years', 'serial', 'setup', 'kidsInto', 'hobbies', 'career', 'background'];
+// career = past roles/industries, oldest first. background = optional shared-identity markers (keys below).
+const BACKGROUNDS = ['veteran', 'athlete', 'corporate', 'firstgen', 'immigrant'];
 // skills = "I can help with". setup = how the business fits the family (keys below).
 const TEAM_SIZES = ['Just me', '2–10', '11–50', '50+'];
 const SETUPS = ['spouse', 'home', 'cofounder', 'dayjob'];
@@ -470,7 +472,9 @@ function toPublic_(o) {
     serial: flag_(o.serial),
     setup: splitList_(o.setup).filter(k => SETUPS.indexOf(k) >= 0),
     kidsInto: splitList_(o.kidsInto),
-    hobbies: splitList_(o.hobbies)
+    hobbies: splitList_(o.hobbies),
+    career: splitList_(o.career),
+    background: splitList_(o.background).filter(k => BACKGROUNDS.indexOf(k) >= 0)
   };
 }
 
@@ -644,6 +648,8 @@ function aiProfile_(text, name) {
     'setup: array with any of "spouse" (runs it with his wife/spouse), "home" (works from home), "cofounder" (has a business partner), "dayjob" (still has a day job), only when stated.',
     'kidsInto: up to 5 short lowercase tags for the kids\' activities and interests (e.g. "soccer", "dance", "minecraft").',
     'hobbies: up to 5 short lowercase tags for what he does for himself (e.g. "fishing", "lifting", "guitar").',
+    'career: his past jobs or industries before this business, oldest first, as up to 8 short lowercase phrases (e.g. "defense software", "real estate", "insurance").',
+    'background: array with any of "veteran", "athlete" (played sports seriously), "corporate" (left a corporate career), "firstgen" (first in family to start a business), "immigrant", only when stated.',
     'askHome: up to 3 short dad-life conversation starters drawn from his notes.',
     'askWork: up to 3 short business conversation starters drawn from his notes.',
     'Use only what he wrote. For any list with nothing mentioned, use []. Never invent facts, places, ages, or numbers. Leave a field empty when it is not mentioned. Plain, warm, specific; no hype words.'
@@ -774,7 +780,8 @@ function profileFields_(d) {
     story: d.story || '',
     needHelp: (d.needHelp || []).join(', '), teamSize: d.teamSize || '', years: d.years == null ? '' : String(d.years),
     serial: d.serial ? 'TRUE' : '', setup: (d.setup || []).join(', '),
-    kidsInto: (d.kidsInto || []).join(', '), hobbies: (d.hobbies || []).join(', ')
+    kidsInto: (d.kidsInto || []).join(', '), hobbies: (d.hobbies || []).join(', '),
+    career: (d.career || []).join(', '), background: (d.background || []).join(', ')
   };
 }
 
@@ -882,7 +889,9 @@ function clean_(e) {
     serial: !!e.serial,
     setup: (Array.isArray(e.setup) ? e.setup : []).filter(k => SETUPS.indexOf(k) >= 0),
     kidsInto: list(e.kidsInto),
-    hobbies: list(e.hobbies)
+    hobbies: list(e.hobbies),
+    career: list(e.career),
+    background: (Array.isArray(e.background) ? e.background : []).filter(k => BACKGROUNDS.indexOf(k) >= 0)
   };
   if (!out.name) throw new Error('Add your name.');
   return out;
