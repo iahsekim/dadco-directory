@@ -389,6 +389,77 @@ a.lnk:hover .link-lbl{color:inherit}
   .ppl .c-email{max-width:none}
   .ppl .st{justify-self:start}
 }
+
+/* ---------- readability pass ---------- */
+body{font-size:17px; line-height:1.6}
+:root{--muted:#4A4741}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --muted:#B9B5AD } }
+:root[data-theme="dark"]{--muted:#B9B5AD}
+.hero-actions{display:flex; gap:10px; flex-wrap:wrap}
+.btn.hero-ghost{border-color:#F4F3F0; color:#F4F3F0; background:transparent}
+.btn.hero-ghost:hover{background:#F4F3F0; color:#0C0D0D}
+.expand-all{min-height:44px; white-space:nowrap}
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr)); align-items:start}
+.tag{cursor:default}
+.tag:hover{transform:none}
+.tag.is-open{grid-column:1 / -1}
+.tag .name{font-size:1.9rem}
+.place-line{margin:-4px 0 0; font-size:.92rem; color:var(--muted)}
+.home-snip{font-size:1.02rem; -webkit-line-clamp:4}
+.tag.is-open .home-snip, .row.is-open .row-home{display:none}
+.work-line{font-size:.95rem}
+.btn.expand{align-self:flex-start; margin-top:4px; border:2px solid var(--outline); background:var(--card); min-height:44px; padding:.5rem 1rem}
+.btn.expand[aria-expanded="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.btn.expand.sm{min-height:36px; padding:.3rem .8rem; margin-top:6px}
+.more{display:grid; grid-template-columns:1fr 1fr; gap:4px 32px; margin-top:6px}
+.tag.is-open .work-line{display:none}
+.tag, .row{scroll-margin-top:150px}
+.more-sec{padding:12px 0 0; border-top:1.5px dashed var(--hair)}
+.more-sec h3{margin:0 0 6px; font-size:1.05rem}
+.more-sec h3 .co{font-weight:400}
+.more-sec.home{border-top:4px solid var(--rust)}
+.more-sec.pairs, .more-sec.find{grid-column:1 / -1}
+.more-sec .prose p{margin:0 0 10px}
+.ask-line{margin:4px 0 8px; font-size:.95rem}
+.ask-line .lbl, .work-line .lbl{font-weight:700; margin-right:6px; color:var(--ink)}
+.pair-list{list-style:none; margin:0; padding:0; display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.pair{width:100%; text-align:left; display:flex; flex-direction:column; gap:2px; padding:10px 14px; border:2px solid var(--rust); border-radius:12px; background:var(--card); cursor:pointer; min-height:56px}
+.pair strong{font-size:1rem}
+.pair span{font-size:.88rem; color:var(--muted)}
+.pair:hover{background:var(--rust); color:var(--rust-ink)}
+.pair:hover span{color:var(--rust-ink)}
+.edit-mine{grid-column:1 / -1; justify-self:start; padding-left:0}
+.flash{box-shadow:0 0 0 4px var(--rust)}
+.row{grid-template-columns:190px minmax(0,1fr) minmax(0,240px)}
+.row{cursor:default}
+.row:hover{background:transparent}
+.row-more{grid-column:1 / -1; padding:4px 18px 18px; border-top:1.5px dashed var(--hair)}
+.row-work{align-items:flex-start}
+/* form */
+.two{display:grid; grid-template-columns:1fr 1fr; gap:0 12px}
+.field select{width:100%; padding:.6rem .7rem; border:1.5px solid var(--outline); border-radius:10px; background:var(--paper)}
+.spaghetti{border:2px solid var(--rust); border-radius:14px; padding:14px 16px 12px; margin:14px 0 4px; background:var(--card)}
+.spaghetti h3{margin:0 0 4px; font-size:1.1rem}
+.spaghetti textarea{width:100%; margin:8px 0 10px; padding:.7rem .8rem; border:1.5px solid var(--outline); border-radius:10px; background:var(--paper); line-height:1.5; resize:vertical}
+.ai-status{margin:8px 0 0; font-size:.9rem; color:var(--muted)}
+.ai-status:empty{display:none}
+.form-divider{display:flex; align-items:center; gap:10px; margin:18px 0 4px; font-weight:700; font-size:.9rem; color:var(--muted)}
+.form-divider::before, .form-divider::after{content:""; flex:1; border-top:1.5px solid var(--hair)}
+.filled{box-shadow:0 0 0 2px var(--rust)}
+.story-q{margin:8px 0; padding:8px 12px; border-left:4px solid var(--rust); background:var(--paper); font-size:.92rem; white-space:pre-wrap}
+@media (max-width:640px){
+  body{font-size:16.5px}
+  .two{grid-template-columns:1fr}
+  .search-row{flex-wrap:wrap}
+  .search{flex:1 1 100%}
+  .expand-all{flex:1}
+  .row{grid-template-columns:1fr}
+  .row-more{padding:4px 14px 14px}
+  .hero-actions .btn{flex:1 1 100%; min-height:48px}
+  .row-work{white-space:normal; overflow:visible}
+  .more{grid-template-columns:1fr}
+  .tag, .row{scroll-margin-top:170px}
+}
 </style>
 </head>
 <body>
@@ -401,7 +472,10 @@ a.lnk:hover .link-lbl{color:inherit}
       <h1 class="marker">Who's in the room</h1>
       <p class="event-line" id="eventLine" hidden></p>
       <p>Everyone here is raising kids and running a business. Ask about both, the good days and the hard ones. Spot yourself? Tap Edit your profile to update it or take it down.</p>
-      <button class="btn primary" id="editBtn" type="button">Edit your profile</button>
+      <div class="hero-actions">
+        <button class="btn primary" id="editBtn" type="button">Edit your profile</button>
+        <button class="btn hero-ghost" type="button" data-join>Not listed? Add yourself</button>
+      </div>
     </div>
   </header>
 </div>
@@ -414,7 +488,8 @@ a.lnk:hover .link-lbl{color:inherit}
 <div class="toolbar">
   <div class="wrap">
     <div class="search-row">
-      <input class="search" id="search" type="search" placeholder="Search names, kids, businesses" aria-label="Search the directory">
+      <input class="search" id="search" type="search" placeholder="Search names, towns, businesses, skills" aria-label="Search the directory">
+      <button type="button" class="btn ghost expand-all" id="expandAll" aria-pressed="false">Expand all</button>
       <div class="views" role="group" aria-label="Layout">
         <button type="button" class="view-btn" data-view="cards" aria-pressed="true" aria-label="Card view">
           <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
@@ -436,7 +511,6 @@ a.lnk:hover .link-lbl{color:inherit}
     <button type="button" class="btn ghost" data-join>Ask to be added</button></div>
 </main>
 
-<dialog id="detailDlg" aria-label="Profile"><div id="detailBody"></div></dialog>
 <dialog id="editDlg" aria-label="Edit your entry"><div class="dlg" id="editBody"></div></dialog>
 
 <script>
@@ -452,10 +526,13 @@ const demo = DEMO ? makeDemo() : null;
 
 const $ = s => document.querySelector(s);
 const grid = $("#grid"), topicsEl = $("#topics"), countEl = $("#count");
-const detailDlg = $("#detailDlg"), detailBody = $("#detailBody");
 const editDlg = $("#editDlg"), editBody = $("#editBody"), unclaimedEl = $("#unclaimed");
 
 let entries = [], filter = null, q = "";
+let AI_ON = false;
+const INDUSTRIES = ["Home services & trades","Construction & real estate","Tech & software","AI & data","Marketing, brand & media",
+  "Sales","Finance & investing","Health, fitness & wellness","Food, drink & hospitality","Retail & ecommerce",
+  "Consulting & professional services","Education & coaching","Creative & design","Engineering & manufacturing","Other"];
 let view = (() => { try{ return localStorage.getItem("dc_view") || ""; }catch(e){ return ""; } })() || "cards";
 
 /* ---------- utils ---------- */
@@ -575,6 +652,7 @@ async function load(){
   try{
     const d = await api("list");
     entries = d.entries;
+    AI_ON = !!d.ai;
     renderEvent(d.event);
   }catch(e){
     grid.innerHTML = `<p class="empty">Couldn't load the directory. ${esc(e.message)}</p>`;
@@ -606,7 +684,8 @@ function renderFilters(){
 function matchesQuery(text){ return !q || q.split(/\s+/).every(w => norm(text).includes(w)); }
 function matches(e){
   if (filter){ const f = FILTERS.find(x => x[0] === filter); if (f && !f[2](e)) return false; }
-  return matchesQuery([e.name, kidsLabel(e), plain(e.home), ...e.askHome, e.company, plain(e.work), ...e.askWork].join(" "));
+  return matchesQuery([e.name, kidsLabel(e), plain(e.home), ...e.askHome, e.company, plain(e.work), ...e.askWork,
+    e.livesIn || "", e.grewUp || "", e.industry || "", ...(e.skills || [])].join(" "));
 }
 
 function render(){
@@ -642,14 +721,150 @@ function homeLine(e){
   return `<span class="missing">No family details yet. Is this you? Add yours.</span>`;
 }
 
+/* ---------- common ground: suggested people to talk to ---------- */
+// Tags for the original guest list, used until people add their own industry and skills.
+const SEED_TAGS = {
+  "ben-lozano":["Home services & trades",["franchising","home services","sales","outdoor living"]],
+  "bryan-fillmer":["AI & data",["ai","automation","investing","consulting","software","fitness"]],
+  "cody-caplinger":["Sales",["sales","scaling teams","fintech","health & performance"]],
+  "dave-ambrose":["Creative & design",["family business","operations","working with your spouse","music"]],
+  "eric-gonzalez":["AI & data",["ai","data","consulting","leadership"]],
+  "greg-narain":["Tech & software",["ai","startups","saas","product","engineering"]],
+  "harrison-brodwin":["Health, fitness & wellness",["mental health","counseling","private practice"]],
+  "jorge-pongo":["Food, drink & hospitality",["coffee","sales","startups","investing","leadership"]],
+  "lucas-droessler":["Tech & software",["software","cloud","ai","consulting"]],
+  "mike-shai":["Education & coaching",["product design","ecommerce","marketing","working with your spouse"]],
+  "solomon-luna":["Home services & trades",["trades","security systems","construction","design"]],
+  "tomas-marin":["Finance & investing",["payments","sales","small business"]],
+  "trevor-schneider":["Home services & trades",["home services","sales","hiring"]],
+  "tyler-schell":["Retail & ecommerce",["ecommerce","marketing","branding","advertising"]],
+  "michael-weber":["AI & data",["ai","automation","saas","consulting"]],
+  "christopher-womack":["Food, drink & hospitality",["restaurants","finance","operations"]],
+  "matthew-krekeler":["Marketing, brand & media",["video production","podcasting","storytelling"]],
+  "william-kowalski":["Finance & investing",["startups","investing","finance","working with your spouse"]],
+  "isaac-pacheco":["Retail & ecommerce",["menswear","sales","branding","podcasting"]],
+  "corey-montez":["Engineering & manufacturing",["engineering","industrial design","product development"]],
+  "ignacio-martinez":["Consulting & professional services",["small business","operations","sales"]],
+  "win-nguyen":["Consulting & professional services",["agencies","operations","sales","growth"]],
+  "ryan-johns":["Health, fitness & wellness",["fitness","coaching","strength training"]],
+  "jeremiah-buschmann":["Home services & trades",["home services","construction","remodeling","trades"]],
+  "adam-stewart":["Home services & trades",["electrical","trades","solar","generators"]]
+};
+const STATES = {alabama:"AL",alaska:"AK",arizona:"AZ",arkansas:"AR",california:"CA",colorado:"CO",connecticut:"CT",delaware:"DE",florida:"FL",georgia:"GA",hawaii:"HI",idaho:"ID",illinois:"IL",indiana:"IN",iowa:"IA",kansas:"KS",kentucky:"KY",louisiana:"LA",maine:"ME",maryland:"MD",massachusetts:"MA",michigan:"MI",minnesota:"MN",mississippi:"MS",missouri:"MO",montana:"MT",nebraska:"NE",nevada:"NV","new hampshire":"NH","new jersey":"NJ","new mexico":"NM","new york":"NY","north carolina":"NC","north dakota":"ND",ohio:"OH",oklahoma:"OK",oregon:"OR",pennsylvania:"PA","rhode island":"RI","south carolina":"SC","south dakota":"SD",tennessee:"TN",texas:"TX",utah:"UT",vermont:"VT",virginia:"VA",washington:"WA","west virginia":"WV",wisconsin:"WI",wyoming:"WY"};
+const STATE_NAMES = Object.fromEntries(Object.entries(STATES).map(([n, a]) => [a, n.replace(/\b\w/g, c => c.toUpperCase())]));
+// "Denver, CO" / "Denver, Colorado" / "Ohio" → { city, state, label }
+function place(s){
+  const raw = String(s || "").trim(); if (!raw) return null;
+  const parts = raw.split(",").map(x => x.trim()).filter(Boolean);
+  const toState = x => { const l = norm(x); if (/^[a-z]{2}$/.test(l) && STATE_NAMES[l.toUpperCase()]) return l.toUpperCase(); return STATES[l] || ""; };
+  let city = "", state = "";
+  if (parts.length >= 2){ city = parts[0]; state = toState(parts[1]); }
+  else { state = toState(parts[0]); if (!state) city = parts[0]; }
+  return { city: norm(city), state, cityLabel: city, stateLabel: STATE_NAMES[state] || "" };
+}
+function tagsOf(e){
+  const seed = SEED_TAGS[e.id] || ["", []];
+  const skills = (e.skills && e.skills.length ? e.skills : seed[1]).map(norm);
+  return { industry: e.industry || seed[0], skills: new Set(skills) };
+}
+function ageBand(a){ return a <= 2 ? "toddlers" : a <= 5 ? "little kids" : a <= 9 ? "kids around " + a : a <= 12 ? "tweens" : a <= 17 ? "teens" : "grown kids"; }
+
+function commonGround(me, other){
+  const why = []; let score = 0;
+  // kids: close ages
+  let best = null;
+  me.kids.forEach(a => other.kids.forEach(b => {
+    if (a.age == null || b.age == null) return;
+    const d = Math.abs(a.age - b.age);
+    if (d <= 1 && (!best || d < best.d)) best = { d, age: Math.min(a.age, b.age), max: Math.max(a.age, b.age) };
+  }));
+  if (best){ why.push(best.age === best.max ? `both have a ${best.age === 0 ? "baby" : best.age + "-year-old"}` : `both have ${ageBand(best.age)}`); score += 3; }
+  const girlDad = e => e.kids.some(k => k.is === "girl"), boyDad = e => e.kids.some(k => k.is === "boy");
+  if (girlDad(me) && girlDad(other)) { why.push("both girl dads"); score += 2; }
+  else if (boyDad(me) && boyDad(other)) { why.push("both boy dads"); score += 2; }
+  if (me.kids.length >= 3 && me.kids.length === other.kids.length){ why.push(`both dads of ${me.kids.length}`); score += 2; }
+  // places
+  const ml = place(me.livesIn), ol = place(other.livesIn);
+  if (ml && ol && ml.city && ml.city === ol.city){ why.push(`both live in ${ml.cityLabel}`); score += 2; }
+  const mg = place(me.grewUp), og = place(other.grewUp);
+  if (mg && og){
+    if (mg.city && mg.city === og.city){ why.push(`both grew up in ${mg.cityLabel}`); score += 3; }
+    else if (mg.state && mg.state === og.state){ why.push(`both grew up in ${mg.stateLabel}`); score += 2; }
+  }
+  // work
+  const mt = tagsOf(me), ot = tagsOf(other);
+  if (mt.industry && mt.industry === ot.industry && mt.industry !== "Other"){ why.push(`both in ${mt.industry.toLowerCase()}`); score += 2; }
+  const shared = [...mt.skills].filter(s => ot.skills.has(s)).slice(0, 2);
+  if (shared.length){ why.push(`both into ${shared.join(" and ")}`); score += shared.length * 1.5; }
+  return { score, why };
+}
+function pairingsFor(e){
+  return claimedOnly().filter(o => o.id !== e.id)
+    .map(o => Object.assign({ o }, commonGround(e, o)))
+    .filter(p => p.score >= 2).sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
+/* ---------- cards with inline expand ---------- */
+const open = new Set();
+let allOpen = false;
+
+function placeLine(e){
+  const bits = [];
+  if (e.livesIn) bits.push(`Lives in ${esc(e.livesIn)}`);
+  if (e.grewUp) bits.push(`grew up in ${esc(e.grewUp)}`);
+  return bits.length ? `<p class="place-line">${bits.join(", ")}</p>` : "";
+}
+
+function detailHTML(e){
+  const pairs = pairingsFor(e);
+  const askList = (items) => items.length ? `<p class="ask-line"><span class="lbl">Ask him about</span> ${items.map(esc).join(" · ")}</p>` : "";
+  return `<div class="more">
+    <section class="more-sec home">
+      <h3>At home</h3>
+      ${plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+      ${askList(e.askHome)}
+    </section>
+    <section class="more-sec work">
+      <h3>At work${e.company ? `: <span class="co">${esc(e.company)}</span>` : ""}</h3>
+      ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+      ${(e.skills || []).length ? `<p class="ask-line"><span class="lbl">Good at</span> ${e.skills.map(esc).join(" · ")}</p>` : ""}
+      ${askList(e.askWork)}
+    </section>
+    ${pairs.length ? `<section class="more-sec pairs"><h3>You two should talk</h3><ul class="pair-list">${pairs.map(p => `
+      <li><button type="button" class="pair" data-goto="${esc(p.o.id)}"><strong>${esc(p.o.name)}</strong><span>${esc(p.why.join(", "))}</span></button></li>`).join("")}</ul></section>` : ""}
+    ${linksHTML(e) ? `<section class="more-sec find"><h3>Find him</h3>${linksHTML(e)}</section>` : ""}
+    <button type="button" class="btn link edit-mine" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
+  </div>`;
+}
+
+function card(e){
+  const isOpen = allOpen || open.has(e.id);
+  return `<article class="tag ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
+    <div class="band"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
+    <div class="tag-body">
+      <h2 class="name marker">${esc(e.name)}</h2>
+      ${placeLine(e)}
+      <p class="home-snip">${homeLine(e)}</p>
+      <p class="work-line"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</p>
+      ${isOpen ? detailHTML(e) : ""}
+      <button type="button" class="btn expand" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More about " + esc(e.name.split(/\s+/)[0])}</button>
+    </div>
+    <div class="foot"></div>
+  </article>`;
+}
+
 function row(e){
-  return `<article class="row" data-id="${esc(e.id)}">
+  const isOpen = allOpen || open.has(e.id);
+  return `<article class="row ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
     <div class="row-kids"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
     <div class="row-main">
-      <h2 class="name marker"><button type="button" class="name-btn">${esc(e.name)}</button></h2>
+      <h2 class="name marker">${esc(e.name)}</h2>
+      ${placeLine(e)}
       <p class="row-home">${homeLine(e)}</p>
     </div>
-    <p class="row-work"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</p>
+    <div class="row-work"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}
+      <button type="button" class="btn expand sm" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More"}</button></div>
+    ${isOpen ? `<div class="row-more">${detailHTML(e)}</div>` : ""}
   </article>`;
 }
 
@@ -663,24 +878,38 @@ document.querySelector(".views").addEventListener("click", ev => {
   const b = ev.target.closest(".view-btn"); if (b) setView(b.dataset.view);
 });
 document.querySelectorAll(".view-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
-
-function card(e){
-  return `<article class="tag" data-id="${esc(e.id)}">
-    <div class="band"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
-    <div class="tag-body">
-      <h2 class="name marker"><button type="button" class="name-btn">${esc(e.name)}</button></h2>
-      <p class="home-snip">${homeLine(e)}</p>
-      <p class="work-line"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</p>
-    </div>
-    <div class="foot"></div>
-  </article>`;
-}
+$("#expandAll").addEventListener("click", ev => {
+  allOpen = !allOpen; open.clear();
+  ev.currentTarget.setAttribute("aria-pressed", String(allOpen));
+  ev.currentTarget.textContent = allOpen ? "Collapse all" : "Expand all";
+  render();
+});
 
 function setFilter(k){ filter = (k && filter !== k) ? k : null; renderFilters(); render(); }
 
+function showPerson(id){
+  if (!entries.some(e => e.id === id)) return;
+  if (filter || q){ filter = null; q = ""; $("#search").value = ""; renderFilters(); }
+  open.add(id); render();
+  const el = document.getElementById("p-" + id);
+  if (el){ el.scrollIntoView({ behavior: "smooth", block: "start" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+}
+function openDetail(id){ showPerson(id); }
+
 grid.addEventListener("click", ev => {
-  const tag = ev.target.closest(".tag, .row");
-  if (tag) openDetail(tag.dataset.id);
+  const t = ev.target.closest("[data-toggle]");
+  if (t){
+    const id = t.dataset.toggle;
+    if (allOpen){ allOpen = false; const b = $("#expandAll"); b.textContent = "Expand all"; b.setAttribute("aria-pressed","false");
+      claimedOnly().forEach(e => open.add(e.id)); open.delete(id); }
+    else if (open.has(id)) open.delete(id); else open.add(id);
+    render();
+    const el = document.getElementById("p-" + id);
+    if (el && !open.has(id) && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
+    return;
+  }
+  const g = ev.target.closest("[data-goto]"); if (g){ showPerson(g.dataset.goto); return; }
+  const ed2 = ev.target.closest("[data-edit]"); if (ed2){ openEdit(ed2.dataset.edit); return; }
 });
 unclaimedEl.addEventListener("click", ev => {
   const b = ev.target.closest("[data-claim]"); if (!b) return;
@@ -692,36 +921,6 @@ topicsEl.addEventListener("click", ev => {
   if (chip) setFilter(chip.dataset.filter);
 });
 $("#search").addEventListener("input", ev => { q = norm(ev.target.value); render(); });
-
-/* ---------- profile detail ---------- */
-function askList(items){ return items.length ? `<h4>Ask me about</h4><ul class="ask">${items.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""; }
-
-function openDetail(id){
-  const e = entries.find(x => x.id === id); if (!e) return;
-  const homeBody = plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : (e.askHome.length ? "" : `<p class="missing">Nothing here yet.</p>`);
-  const workBody = plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : (e.askWork.length ? "" : `<p class="missing">Nothing here yet.</p>`);
-  detailBody.innerHTML = `
-    <div class="band big"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
-    <div class="dlg">
-      <h2 class="name marker">${esc(e.name)}</h2>
-      <section class="side home"><h3>At home</h3>${homeBody}${askList(e.askHome)}</section>
-      <section class="side work"><h3>At work${e.company ? `: <span class="co">${esc(e.company)}</span>` : ""}</h3>${workBody}${askList(e.askWork)}</section>
-      ${linksHTML(e) ? `<section class="side find"><h3>Where to find me</h3>${linksHTML(e)}</section>` : ""}
-      <div class="actions">
-        <button type="button" class="btn link spacer" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
-        <button type="button" class="btn ghost" data-close>Close</button>
-      </div>
-    </div>
-    <div class="foot"></div>`;
-  detailDlg.showModal();
-  detailDlg.querySelector("[data-close]").focus({ preventScroll:true });
-  detailDlg.scrollTop = 0;
-}
-detailDlg.addEventListener("click", ev => {
-  if (ev.target === detailDlg || ev.target.closest("[data-close]")){ detailDlg.close(); return; }
-  const edb = ev.target.closest("[data-edit]");
-  if (edb){ detailDlg.close(); openEdit(edb.dataset.edit); }
-});
 
 /* ---------- claim / edit flow: email → form → sent (no code) ---------- */
 const ed = { step:"email", email:recall("dc_email"), id:null, claimName:"", entry:null, pending:null, error:"", busy:false };
@@ -742,9 +941,9 @@ function openEdit(id, name){
     .finally(() => renderEdit());
 }
 $("#editBtn").addEventListener("click", () => openEdit());
-document.querySelector(".join-cta [data-join]").addEventListener("click", () => {
+document.querySelectorAll("[data-join]").forEach(b => b.addEventListener("click", () => {
   ed.error = ""; ed.step = "join"; renderEdit(); editDlg.showModal();
-});
+}));
 editDlg.addEventListener("click", ev => { if (ev.target === editDlg) editDlg.close(); });
 
 function demoHint(){
@@ -765,8 +964,21 @@ function kidRow(k){
 }
 
 function profileFieldsHTML(src){
+  const ind = src.industry || (SEED_TAGS[src.id] || [""])[0] || "";
   return `
-      <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required value="${esc(src.name)}"></div>
+      ${AI_ON ? `<section class="spaghetti">
+        <h3>Throw spaghetti at the wall</h3>
+        <p class="hint">Where you live, where you grew up, what you do, and a bit about your kids: what's great and what's hard right now. Don't worry about wording. We'll turn it into a short profile you can tweak.</p>
+        <textarea id="fStory" rows="6" maxlength="3000" placeholder="Grew up in Cleveland, live in Arvada now. Run a roofing company with 12 guys, mostly residential. Hiring is the hard part lately. Two girls, 6 and 9, both obsessed with soccer…">${esc(src.story || "")}</textarea>
+        <button type="button" class="btn primary sm" data-ai>Write my profile from this</button>
+        <p class="ai-status" id="aiStatus" role="status"></p>
+      </section>
+      <p class="form-divider"><span>Then check the details</span></p>` : ""}
+      <div class="field"><label for="fName">Name</label><input id="fName" maxlength="80" required autocomplete="name" value="${esc(src.name)}"></div>
+      <div class="two">
+        <div class="field"><label for="fLives">Where you live</label><input id="fLives" maxlength="60" placeholder="Arvada, CO" value="${esc(src.livesIn || "")}"></div>
+        <div class="field"><label for="fGrew">Where you grew up</label><input id="fGrew" maxlength="60" placeholder="Cleveland, OH" value="${esc(src.grewUp || "")}"></div>
+      </div>
 
       <fieldset class="group home">
         <legend>At home</legend>
@@ -784,11 +996,15 @@ function profileFieldsHTML(src){
 
       <fieldset class="group">
         <legend>At work</legend>
-        <div class="field"><label for="fCo">What you run</label><span class="hint">Business name, or what it does in a few words</span>
-          <input id="fCo" maxlength="100" value="${esc(src.company)}"></div>
+        <div class="two">
+          <div class="field"><label for="fCo">What you run</label><input id="fCo" maxlength="100" placeholder="Business name" value="${esc(src.company)}"></div>
+          <div class="field"><label for="fInd">Industry</label><select id="fInd"><option value="">Pick one</option>${INDUSTRIES.map(x => `<option ${x === ind ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
+        </div>
         <div class="field"><label for="fWork">Life at work</label>
-          <span class="hint">What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
+          <span class="hint">What you do and who it's for. What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
           <textarea id="fWork" maxlength="1200">${esc(src.work)}</textarea></div>
+        <div class="field"><label for="fSkills">Skills and experience</label><span class="hint">A few tags, separated by commas. These help match you with other dads.</span>
+          <input id="fSkills" placeholder="sales, hiring, franchising" value="${esc((src.skills && src.skills.length ? src.skills : (SEED_TAGS[src.id] || ["", []])[1]).join(", "))}"></div>
         <div class="field"><label for="fAskWork">Ask me about</label><span class="hint">Business conversation starters, separated by commas</span>
           <input id="fAskWork" value="${esc(src.askWork.join(", "))}"></div>
       </fieldset>
@@ -800,6 +1016,41 @@ function profileFieldsHTML(src){
         <button type="button" class="btn ghost sm addkid" data-addlink>Add a link</button>
       </fieldset>
 `;
+}
+
+function readProfile(){
+  return {
+    name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAskHome").value),
+    company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: splitList($("#fAskWork").value), links: readLinks(),
+    livesIn: $("#fLives").value.trim(), grewUp: $("#fGrew").value.trim(), industry: $("#fInd").value,
+    skills: splitList($("#fSkills").value), story: $("#fStory") ? $("#fStory").value.trim() : ""
+  };
+}
+
+// Fill the form from an AI-written profile. Leaves name and links alone.
+function fillProfile(p){
+  const set = (sel, v) => { const el = $(sel); if (el && v != null && String(v).trim() !== ""){ el.value = v; el.classList.add("filled"); } };
+  set("#fLives", p.livesIn); set("#fGrew", p.grewUp); set("#fHome", p.home); set("#fCo", p.company); set("#fWork", p.work);
+  if (p.industry) set("#fInd", p.industry);
+  if (p.askHome && p.askHome.length) set("#fAskHome", p.askHome.join(", "));
+  if (p.askWork && p.askWork.length) set("#fAskWork", p.askWork.join(", "));
+  if (p.skills && p.skills.length) set("#fSkills", p.skills.join(", "));
+  if (p.kids && p.kids.length){ $("#kidList").innerHTML = p.kids.map(kidRow).join(""); $("#kidList").classList.add("filled"); }
+}
+
+async function runAI(btn){
+  const text = ($("#fStory").value || "").trim(), status = $("#aiStatus");
+  if (text.length < 15){ status.textContent = "Tell us a little more first: where you live, what you do, and about your kids."; return; }
+  btn.disabled = true; btn.textContent = "Writing…"; status.textContent = "";
+  try{
+    const r = ed.step === "admin"
+      ? await api("adminAiFormat", { key: adminKey, text, name: $("#fName").value.trim() })
+      : await api("aiFormat", { email: ed.email, id: ed.entry.id, text });
+    fillProfile(r.profile);
+    status.textContent = "Done. Look it over below, change anything you like, then save.";
+    $("#fName").scrollIntoView({ behavior: "smooth", block: "start" });
+  }catch(e){ status.textContent = e.message; }
+  btn.disabled = false; btn.textContent = "Write my profile from this";
 }
 
 function manageHTML(confirming){
@@ -887,6 +1138,9 @@ function renderEdit(){
       <p class="muted">An organizer will add you to this event's guest list. Then you can fill in your profile with the same email.</p>
       <div class="field"><label for="jName">Your name</label><input id="jName" maxlength="80" autocomplete="name" required></div>
       <div class="field"><label for="jEmail">Email</label><input id="jEmail" type="email" inputmode="email" autocomplete="email" required value="${esc(ed.email)}"></div>
+      <div class="field"><label for="jStory">Tell us about you <span class="hint">optional</span></label>
+        <span class="hint">Where you live, where you grew up, what you do, and a bit about your kids. Any order, any wording. We'll use it to start your profile.</span>
+        <textarea id="jStory" rows="5" maxlength="3000"></textarea></div>
       ${err}
       <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
         <button class="btn primary" ${dis}>${ed.busy ? "Sending…" : "Send request"}</button></div>
@@ -934,6 +1188,7 @@ function renderEdit(){
 
 editBody.addEventListener("click", ev => {
   if (ev.target.closest("[data-cancel]")) editDlg.close();
+  const aiBtn = ev.target.closest("[data-ai]"); if (aiBtn){ runAI(aiBtn); return; }
   if (ev.target.closest("[data-view-mine]")){ editDlg.close(); openDetail(ed.entry.id); return; }
   if (ev.target.closest("[data-join-inline]")){ ed.error = ""; ed.step = "join"; renderEdit(); return; }
   if (ev.target.closest("[data-switch]")){
@@ -983,10 +1238,7 @@ editBody.addEventListener("submit", async ev => {
   let snapshot = null;
   try{
     if (id === "fAdmin"){
-      snapshot = {
-        name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAskHome").value),
-        company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: splitList($("#fAskWork").value), links: readLinks()
-      };
+      snapshot = readProfile();
       const settings = { email: $("#aEmail").value.trim(), claimed: $("#aClaimed").checked, onList: $("#aOnList").checked, hidden: $("#aHidden").checked };
       if (!snapshot.name) throw new Error("Add a name.");
       Object.assign(ed.admin, snapshot, settings);   // keep typing if save fails
@@ -1000,8 +1252,9 @@ editBody.addEventListener("submit", async ev => {
       const name = $("#jName").value.trim(), email = norm($("#jEmail").value);
       if (!name) throw new Error("Add your name.");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Add the email you want to use for your profile.");
-      ed.busy = true; renderEdit(); $("#jName").value = name; $("#jEmail").value = email;
-      await api("requestJoin", { name, email });
+      const story0 = $("#jStory").value;
+      ed.busy = true; renderEdit(); $("#jName").value = name; $("#jEmail").value = email; $("#jStory").value = story0;
+      await api("requestJoin", { name, email, story: ($("#jStory").value || "").trim() });
       ed.email = email; store("dc_email", email);
       ed.step = "joined";
     } else if (id === "fEmail"){
@@ -1013,16 +1266,7 @@ editBody.addEventListener("submit", async ev => {
       store("dc_email", ed.email);
       ed.step = "form";
     } else if (id === "fEntry"){
-      snapshot = {
-        name: $("#fName").value.trim(),
-        kids: readKids(),
-        home: $("#fHome").value.trim(),
-        askHome: splitList($("#fAskHome").value),
-        company: $("#fCo").value.trim(),
-        work: $("#fWork").value.trim(),
-        askWork: splitList($("#fAskWork").value),
-        links: readLinks()
-      };
+      snapshot = readProfile();
       if (!snapshot.name) throw new Error("Add your name.");
       ed.busy = true; ed.pending = snapshot; renderEdit();
       const res = await api("submit", { email: ed.email, id: ed.entry.id, entry: snapshot });
@@ -1036,15 +1280,16 @@ editBody.addEventListener("submit", async ev => {
     ed.error = e.message;
     if (snapshot) ed.pending = snapshot;   // keep what they typed on re-render
   }
-  const keepJoin = id === "fJoin" && ed.step === "join" ? [$("#jName").value, $("#jEmail").value] : null;
+  const keepJoin = id === "fJoin" && ed.step === "join" ? [$("#jName").value, $("#jEmail").value, $("#jStory").value] : null;
   ed.busy = false; renderEdit();
-  if (keepJoin){ $("#jName").value = keepJoin[0]; $("#jEmail").value = keepJoin[1]; }
+  if (keepJoin){ $("#jName").value = keepJoin[0]; $("#jEmail").value = keepJoin[1]; $("#jStory").value = keepJoin[2]; }
 });
 
 /* ---------- admin (open the page with #admin): current event + review queue ---------- */
 const adminEl = $("#admin");
 const FIELDS = [["name","Name"],["kids","Kids"],["home","At home"],["askHome","Ask me about (home)"],
-                ["company","What he runs"],["work","At work"],["askWork","Ask me about (work)"],["links","Links"]];
+                ["company","What he runs"],["work","At work"],["askWork","Ask me about (work)"],["links","Links"],
+                ["livesIn","Lives in"],["grewUp","Grew up"],["industry","Industry"],["skills","Skills"]];
 let adminKey = recall("dc_admin");
 let importDraft = null;   // { source:"csv"|"luma", event, guests, skipped, rows, events, eventId }
 let adminLuma = null;     // { configured, linked, lastSync, autoSync }
@@ -1114,6 +1359,7 @@ async function renderAdmin(){
         return `<div class="sub" data-sub="${esc(it.submissionId)}">
           <div class="sub-head"><strong>${esc(it.proposed.name)} <span class="tag-join">Wants to join</span></strong>
             <span class="muted">${esc(it.email)} · ${isNaN(when) ? "" : when.toLocaleString()}</span></div>
+          ${it.proposed.story ? `<blockquote class="story-q">${esc(it.proposed.story)}</blockquote>` : ""}
           <p class="muted">${it.matchedName ? `Matches ${esc(it.matchedName)}, already in the directory from an earlier event.` : "New to the directory."} Approving adds them to the current guest list, and they can then claim their profile with this email.</p>
           <div class="actions"><button type="button" class="btn bad" data-decide="reject">Decline</button>
             <button type="button" class="btn primary" data-decide="approve">Add to guest list</button></div>
@@ -1182,7 +1428,7 @@ function refreshPeople(){ const el = $("#pplTable"); if (el) el.innerHTML = peop
 function openAdminEdit(id){
   const p = id ? people.find(x => x.id === id) : null;
   ed.admin = p ? JSON.parse(JSON.stringify(p))
-    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], email:"", claimed:false, hidden:false, onList:true };
+    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], livesIn:"", grewUp:"", industry:"", skills:[], story:"", email:"", claimed:false, hidden:false, onList:true };
   ed.error = ""; ed.step = "admin"; renderEdit(); editDlg.showModal();
 }
 function recentHTML(it){
@@ -1445,7 +1691,26 @@ window.addEventListener("hashchange", renderAdmin);
 
 /* ---------- in-browser demo backend (used only when API_URL is blank) ---------- */
 function makeDemo(){
-  const pub = e => JSON.parse(JSON.stringify({ id:e.id, name:e.name, kids:e.kids, home:e.home, askHome:e.askHome, company:e.company, work:e.work, askWork:e.askWork, links:e.links || [] }));
+  const pub = e => JSON.parse(JSON.stringify({ id:e.id, name:e.name, kids:e.kids, home:e.home, askHome:e.askHome, company:e.company, work:e.work, askWork:e.askWork, links:e.links || [],
+    livesIn:e.livesIn || "", grewUp:e.grewUp || "", industry:e.industry || "", skills:e.skills || [], story:e.story || "" }));
+  // Rough stand-in for the AI writer so the demo works offline.
+  function demoAI(text, name){
+    const first = (name || "He").split(/\s+/)[0];
+    const grab = re => { const m = text.match(re); return m ? m[1].trim().replace(/\s+(now|currently)$/i, "") : ""; };
+    const PL = "([A-Z][\\w'-]*(?: [A-Z][\\w'-]*)*(?:, ?[A-Z]{2})?)";
+    const livesIn = grab(new RegExp("[Ll]ives?(?: out)? in " + PL));
+    const grewUp = grab(new RegExp("[Gg]rew up in " + PL));
+    const kids = []; const kidRe = /(\d{1,2})[- ]?(?:yo|year|yr)/gi; let m;
+    while ((m = kidRe.exec(text))) kids.push({ age: +m[1], is: "" });
+    if (!kids.length){ const m2 = text.match(/(\d{1,2}) and (\d{1,2})/); if (m2) kids.push({ age:+m2[1], is:"" }, { age:+m2[2], is:"" }); }
+    const g = /girl|daughter/i.test(text), b = /boy|son\b/i.test(text);
+    kids.forEach(k => { k.is = g && !b ? "girl" : b && !g ? "boy" : ""; });
+    const sents = text.split(/(?<=[.!?])\s+/);
+    const homeS = sents.filter(s => /kid|son|daughter|girl|boy|wife|family|soccer|school/i.test(s)).slice(0, 2).join(" ");
+    const workS = sents.filter(s => /run|own|business|company|work|clients|hiring|sell/i.test(s)).slice(0, 2).join(" ");
+    return { livesIn, grewUp, kids, home: homeS ? homeS.replace(/\bI\b/g, first).replace(/\bmy\b/gi, "his") : "", company: "",
+      industry: "", work: workS ? workS.replace(/\bI\b/g, first).replace(/\bmy\b/gi, "his") : "", skills: [], askHome: [], askWork: [] };
+  }
   const owner = e => Object.assign(pub(e), { hidden: !!e.hidden, claimed: !!e.claimed });
   const preClaimed = ["ben-lozano","bryan-fillmer","dave-ambrose","mike-shai","matthew-krekeler","lucas-droessler"];
   const db = SEED.map(e => Object.assign(pub(e), {
@@ -1491,7 +1756,9 @@ function makeDemo(){
   }
   const pendingFor = id => pending.filter(x => x.entryId === id && x.status === "pending").pop();
   return {
-    list: () => ({ event: { name:event.name, date:event.date, url:event.url }, entries: db.filter(e => !e.hidden && event.ids.has(e.id)).map(e => Object.assign(pub(e), { claimed: !!e.claimed })) }),
+    aiFormat({ email, id, text }){ const e = auth(email, id); return { profile: demoAI(text, e.name) }; },
+    adminAiFormat({ text, name }){ return { profile: demoAI(text, name) }; },
+    list: () => ({ ai: true, event: { name:event.name, date:event.date, url:event.url }, entries: db.filter(e => !e.hidden && event.ids.has(e.id)).map(e => Object.assign(pub(e), { claimed: !!e.claimed })) }),
     open({ email, id }){ const e = auth(email, id); const p = pendingFor(e.id); return { email, entry: owner(e), pending: p ? p.data : null }; },
     submit({ email, id, entry }){
       const e = auth(email, id);
@@ -1586,12 +1853,12 @@ function makeDemo(){
       if (key !== "demo") throw new Error("That admin key is wrong.");
       return { person: demoAdd(name, norm(email)) };
     },
-    requestJoin({ name, email }){
+    requestJoin({ name, email, story }){
       email = norm(email);
       const mine = db.find(e => e.email === email);
       if (mine && event.ids.has(mine.id)) throw new Error("You're already on the list. Tap Edit your profile at the top to fill yours in.");
       pending.forEach(x => { if (x.data.type === "join" && x.email === email && x.status === "pending") x.status = "replaced"; });
-      pending.push({ submissionId: Math.random().toString(36).slice(2), entryId:"", email, submittedAt:new Date().toISOString(), status:"pending", data:{ type:"join", name } });
+      pending.push({ submissionId: Math.random().toString(36).slice(2), entryId:"", email, submittedAt:new Date().toISOString(), status:"pending", data:{ type:"join", name, story: story || "" } });
       return {};
     },
     adminList({ key }){
@@ -1606,7 +1873,8 @@ function makeDemo(){
       if (key !== "demo") throw new Error("That admin key is wrong.");
       const p = pending.find(x => x.submissionId === submissionId);
       if (!p || p.status !== "pending") throw new Error("That submission was already handled.");
-      if (p.data.type === "join"){ if (decision === "approve") demoAdd(p.data.name, p.email); p.status = decision === "approve" ? "approved" : "rejected"; return {}; }
+      if (p.data.type === "join"){ if (decision === "approve"){ const a = demoAdd(p.data.name, p.email); const e = byId(a.id);
+          if (p.data.story && !e.home && !e.work) Object.assign(e, demoAI(p.data.story, e.name), { story: p.data.story }); } p.status = decision === "approve" ? "approved" : "rejected"; return {}; }
       if (decision === "approve") Object.assign(byId(p.entryId), p.data, { claimed: true });
       p.status = decision === "approve" ? "approved" : "rejected";
       return {};
