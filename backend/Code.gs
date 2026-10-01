@@ -28,7 +28,15 @@ const DIR = 'Directory';
 const PENDING = 'Pending';
 // kids column: comma-separated "age girl|boy", e.g. "7 girl, 11 girl" or "? boy" when the age is unknown.
 // links column: one per line, "type: value" — types: instagram, twitter, website, phone, email, other.
-const COLS = ['id', 'email', 'name', 'kids', 'home', 'askHome', 'company', 'work', 'askWork', 'links', 'claimed', 'hidden', 'updatedAt'];
+const COLS = ['id', 'email', 'name', 'kids', 'home', 'askHome', 'company', 'work', 'askWork', 'links', 'claimed', 'hidden', 'updatedAt',
+  'livesIn', 'grewUp', 'industry', 'skills', 'story'];
+// Missing columns (like livesIn on an older Sheet) are added automatically the first time they're written.
+const INDUSTRIES = ['Home services & trades', 'Construction & real estate', 'Tech & software', 'AI & data', 'Marketing, brand & media',
+  'Sales', 'Finance & investing', 'Health, fitness & wellness', 'Food, drink & hospitality', 'Retail & ecommerce',
+  'Consulting & professional services', 'Education & coaching', 'Creative & design', 'Engineering & manufacturing', 'Other'];
+
+// ---- AI profile writer (optional). Add ANTHROPIC_API_KEY in Script Properties to turn it on. ----
+const AI_MODEL = 'claude-haiku-4-5-20251001';
 const PCOLS = ['submissionId', 'entryId', 'email', 'submittedAt', 'status', 'data'];
 const EVENTS = 'Events';
 const RSVPS = 'RSVPs';
@@ -102,7 +110,7 @@ const ACTIONS = {
     const guests = currentGuestIds_();
     const entries = readDir_().filter(r => r.name && !isHidden_(r) && (!guests || guests[String(r.id)]))
       .map(r => Object.assign(toPublic_(r), { claimed: isClaimed_(r) }));
-    return { entries, event: publicEvent_(currentEvent_()) };
+    return { entries, event: publicEvent_(currentEvent_()), ai: !!aiKey_(), industries: INDUSTRIES };
   },
 
   // Email-only access: returns the profile to pre-fill the form.
@@ -118,12 +126,8 @@ const ACTIONS = {
     const wasClaimed = isClaimed_(auth.entry);
     withLock_(() => {
       const entry = entryById_(auth.entry.id);
-      const prev = Object.assign(toPublic_(entry), { claimed: isClaimed_(entry) });
-      const fields = {
-        name: data.name, kids: kidsText_(data.kids), home: data.home, askHome: data.askHome.join(', '),
-        company: data.company, work: data.work, askWork: data.askWork.join(', '), links: linksText_(data.links),
-        claimed: 'TRUE'
-      };
+      const prev = Object.assign(toPublic_(entry), { claimed: isClaimed_(entry), story: String(entry.story || '') });
+      const fields = Object.assign(profileFields_(data), { claimed: 'TRUE' });
       if (!String(entry.email || '').trim()) fields.email = auth.email;
       writeRow_(entry._row, fields);
       markPending_(entry.id, 'replaced');   // retire any old-style pending edits
@@ -244,11 +248,26 @@ const ACTIONS = {
       for (let k = 1; k < vals.length; k++) {
         if (vals[k][4] === 'pending' && String(vals[k][2]) === email && /"type":"join"/.test(vals[k][5])) sh.getRange(k + 1, 5).setValue('replaced');
       }
-      sh.appendRow([Utilities.getUuid(), '', email, new Date().toISOString(), 'pending', JSON.stringify({ type: 'join', name })]);
+      const story = String(req.story || '').trim().slice(0, 3000);
+      sh.appendRow([Utilities.getUuid(), '', email, new Date().toISOString(), 'pending', JSON.stringify({ type: 'join', name, story })]);
     });
     cache.put('join:' + email, '1', 600);
     if (adminEmail_()) MailApp.sendEmail(adminEmail_(), `${EVENT_NAME}: ${name} asked to be added`, 'Open the directory with #admin at the end of the URL to review it.');
     return {};
+  },
+
+  // Turns a rambling "tell us about you" into tidy profile fields. Same email check as editing.
+  aiFormat(req) {
+    const auth = authorize_(req.email, req.id);
+    const cache = CacheService.getScriptCache(), k = 'ai:' + auth.email, n = Number(cache.get(k) || 0);
+    if (n >= 10) throw new Error("That's a lot of rewrites. Try again in an hour, or edit the fields by hand.");
+    cache.put(k, String(n + 1), 3600);
+    return { profile: aiProfile_(req.text, auth.entry.name) };
+  },
+
+  adminAiFormat(req) {
+    checkAdmin_(req.key);
+    return { profile: aiProfile_(req.text, req.name) };
   },
 
   // ---- Organizer editing: everyone in the Directory, no claiming needed ----
@@ -279,12 +298,10 @@ const ACTIONS = {
       }
       const other = emails.map(e => findByEmail_(e)).find(r => r && String(r.id) !== String(entry.id));
       if (other) throw new Error(`That email is already used by ${other.name}.`);
-      const prev = Object.assign(toPublic_(entry), { claimed: isClaimed_(entry) });
-      writeRow_(entry._row, {
-        name: data.name, kids: kidsText_(data.kids), home: data.home, askHome: data.askHome.join(', '),
-        company: data.company, work: data.work, askWork: data.askWork.join(', '), links: linksText_(data.links),
+      const prev = Object.assign(toPublic_(entry), { claimed: isClaimed_(entry), story: String(entry.story || '') });
+      writeRow_(entry._row, Object.assign(profileFields_(data), {
         email: emails.join(', '), claimed: s.claimed ? 'TRUE' : '', hidden: s.hidden ? 'TRUE' : ''
-      });
+      }));
       setOnList_(String(entry.id), data.name, emails[0] || '', s.onList !== false);
       sheet_(PENDING).appendRow([Utilities.getUuid(), String(entry.id), 'organizer', new Date().toISOString(), 'published',
         JSON.stringify(Object.assign({}, data, { _prev: prev, _claim: false, _admin: true }))]);
@@ -319,11 +336,7 @@ const ACTIONS = {
       const prev = JSON.parse(vals[i][5])._prev;
       const entry = entryById_(entryId);
       if (!prev || !entry) throw new Error("Can't find the earlier version.");
-      writeRow_(entry._row, {
-        name: prev.name, kids: kidsText_(prev.kids), home: prev.home, askHome: (prev.askHome || []).join(', '),
-        company: prev.company, work: prev.work, askWork: (prev.askWork || []).join(', '), links: linksText_(prev.links),
-        claimed: prev.claimed ? 'TRUE' : ''
-      });
+      writeRow_(entry._row, Object.assign(profileFields_(prev), { claimed: prev.claimed ? 'TRUE' : '' }));
       p.getRange(i + 1, 5).setValue('undone');
     });
     return {};
@@ -356,7 +369,19 @@ const ACTIONS = {
       if (i < 0 || vals[i][4] !== 'pending') throw new Error('That submission was already handled.');
       const data0 = JSON.parse(vals[i][5]);
       if (data0.type === 'join') {
-        if (req.decision === 'approve') addToCurrent_(data0.name, String(vals[i][2]));
+        if (req.decision === 'approve') {
+          const added = addToCurrent_(data0.name, String(vals[i][2]));
+          const entry = entryById_(added.person.id);
+          // Fill an empty profile from what they wrote in their request (formatted by AI when it's on).
+          if (data0.story && entry && !String(entry.home || '').trim() && !String(entry.work || '').trim()) {
+            let prof = {};
+            try { if (aiKey_()) prof = aiProfile_(data0.story, entry.name); } catch (x) { prof = {}; }
+            const full = Object.assign({ name: entry.name, kids: [], askHome: [], askWork: [], links: [], skills: [] }, prof, { story: data0.story });
+            const fields = profileFields_(full);
+            delete fields.name; delete fields.links;
+            writeRow_(entry._row, fields);
+          }
+        }
         p.getRange(i + 1, 5).setValue(req.decision === 'approve' ? 'approved' : 'rejected');
         return;
       }
@@ -430,7 +455,11 @@ function toPublic_(o) {
     company: String(o.company || ''),
     work: String(o.work || ''),
     askWork: splitList_(o.askWork),
-    links: parseLinks_(o.links)
+    links: parseLinks_(o.links),
+    livesIn: String(o.livesIn || ''),
+    grewUp: String(o.grewUp || ''),
+    industry: String(o.industry || ''),
+    skills: splitList_(o.skills)
   };
 }
 
@@ -578,6 +607,43 @@ function importGuests_(event, rawGuests, dryRun, replaceEventId, lumaEventId) {
 }
 
 // Match by email, then by name (same rules as imports).
+function aiKey_() { return PropertiesService.getScriptProperties().getProperty('ANTHROPIC_API_KEY') || ''; }
+
+function aiProfile_(text, name) {
+  const key = aiKey_();
+  if (!key) throw new Error('The profile writer is off. Fill in the fields below instead.');
+  text = String(text || '').trim().slice(0, 3000);
+  if (text.length < 15) throw new Error('Tell us a little more first: where you live, what you do, and about your kids.');
+  const first = String(name || '').trim().split(/\s+/)[0] || 'He';
+  const system = [
+    'You turn a dad\'s casual notes into a short directory profile for a meetup of dads who own businesses.',
+    'Reply with ONLY a JSON object, no markdown, with these keys:',
+    'livesIn: where he lives now as "City, ST" (US state abbreviation) or "" if not given.',
+    'grewUp: where he grew up as "City, ST", or just a state or country, or "".',
+    'kids: array of {"age": number or null, "is": "girl" | "boy" | ""}. Babies under one are age 0.',
+    'home: 1-2 short sentences, third person using "' + first + '", about family life: what the kids are into, the fun parts and the hard parts he mentioned.',
+    'company: business name or a few words on what he runs, or "".',
+    'industry: exactly one of: ' + INDUSTRIES.join(' | ') + '.',
+    'work: 1-2 short sentences, third person, an elevator pitch: what he does, who it\'s for, and anything he said is going well or hard. Wrap the business name in **double asterisks**.',
+    'skills: up to 6 short lowercase tags for his skills, career path, or expertise (e.g. "sales", "franchising", "software").',
+    'askHome: up to 3 short dad-life conversation starters drawn from his notes.',
+    'askWork: up to 3 short business conversation starters drawn from his notes.',
+    'Use only what he wrote. Never invent facts, places, ages, or numbers. Leave a field empty when it is not mentioned. Plain, warm, specific; no hype words.'
+  ].join('\n');
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify({ model: AI_MODEL, max_tokens: 1000, system, messages: [{ role: 'user', content: text }] })
+  });
+  if (res.getResponseCode() >= 300) throw new Error('The profile writer is busy. Try again in a moment, or fill in the fields yourself.');
+  const out = (JSON.parse(res.getContentText()).content || []).map(c => c.text || '').join('');
+  let p;
+  try { p = JSON.parse(out.replace(/```json|```/g, '').trim()); } catch (x) { throw new Error("The profile writer got confused. Try rewording, or fill in the fields yourself."); }
+  const c = clean_(Object.assign({ name: name || 'x' }, p));
+  delete c.name; delete c.links; delete c.story;
+  return c;
+}
+
 function stripMeta_(d) { const o = Object.assign({}, d); delete o._prev; delete o._claim; return o; }
 
 function findMatch_(dir, name, email) {
@@ -681,7 +747,17 @@ function slug_(name) {
 function flag_(v) { return /^(true|yes|1)$/i.test(String(v || '').trim()); }
 function isHidden_(o) { return flag_(o.hidden); }
 function isClaimed_(o) { return flag_(o.claimed); }
-function ownerView_(o) { return Object.assign(toPublic_(o), { hidden: isHidden_(o), claimed: isClaimed_(o) }); }
+// Directory columns for a cleaned profile.
+function profileFields_(d) {
+  return {
+    name: d.name, kids: kidsText_(d.kids), home: d.home, askHome: (d.askHome || []).join(', '),
+    company: d.company, work: d.work, askWork: (d.askWork || []).join(', '), links: linksText_(d.links),
+    livesIn: d.livesIn || '', grewUp: d.grewUp || '', industry: d.industry || '', skills: (d.skills || []).join(', '),
+    story: d.story || ''
+  };
+}
+
+function ownerView_(o) { return Object.assign(toPublic_(o), { hidden: isHidden_(o), claimed: isClaimed_(o), story: String(o.story || '') }); }
 
 // Write named columns on one Directory row and stamp updatedAt.
 function writeRow_(row, fields) {
@@ -689,8 +765,12 @@ function writeRow_(row, fields) {
   const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
   const all = Object.assign({}, fields, { updatedAt: new Date().toISOString() });
   Object.keys(all).forEach(k => {
-    const c = head.indexOf(k);
-    if (c < 0) throw new Error('The Directory tab is missing the "' + k + '" column. Add it or rerun setup().');
+    let c = head.indexOf(k);
+    if (c < 0) {   // add the column on the fly
+      c = head.length; head.push(k);
+      sh.getRange(1, c + 1).setValue(k).setFontWeight('bold');
+      sh.getRange(1, c + 1, sh.getMaxRows(), 1).setNumberFormat('@');
+    }
     sh.getRange(row, c + 1).setValue(all[k]);
   });
 }
@@ -769,7 +849,12 @@ function clean_(e) {
     links: (Array.isArray(e.links) ? e.links : []).map(l => ({
       type: LINK_TYPES.indexOf(l && l.type) >= 0 ? l.type : 'other',
       value: String((l && l.value) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 200)
-    })).filter(l => l.value).slice(0, 8)
+    })).filter(l => l.value).slice(0, 8),
+    livesIn: text(e.livesIn, 60),
+    grewUp: text(e.grewUp, 60),
+    industry: INDUSTRIES.indexOf(e.industry) >= 0 ? e.industry : '',
+    skills: list(e.skills),
+    story: text(e.story, 3000)
   };
   if (!out.name) throw new Error('Add your name.');
   return out;
