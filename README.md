@@ -51,4 +51,4 @@ With `API_URL` blank the page runs a self-contained demo: a few profiles are pre
 ## Notes
 - After changing `Code.gs`, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
 
-_Deploys automatically from `main` via Netlify._
+_Deploys automatically from `main` via Netlify (public repo)._
