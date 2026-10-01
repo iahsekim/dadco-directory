@@ -600,6 +600,31 @@ body{font-size:17px; line-height:1.6}
   .actions.sticky .btn{flex:1}
   .join-line{margin-bottom:40px}
 }
+
+/* ---------- lighter list ---------- */
+.nt{border-width:2px; border-top:6px solid var(--rust)}
+.nt-hi{font-size:.7rem; color:var(--rust); letter-spacing:.06em; margin-bottom:2px}
+.nt-hi b{font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-right:3px}
+.nt-sum{padding:12px 18px 13px}
+.nt-name{font-size:1.65rem}
+.nt-list{gap:12px}
+.filter-sel{height:48px; padding:0 2.2rem 0 .9rem; border:2px solid var(--outline); border-radius:12px; background:var(--card); font-weight:600; max-width:240px;
+  appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:calc(100% - 18px) 21px, calc(100% - 13px) 21px; background-size:5px 5px; background-repeat:no-repeat}
+.toolbar{padding:12px 0}
+.hero{padding:22px 20px 24px}
+.logo{width:200px}
+.hero h1{font-size:clamp(1.9rem,4.4vw,2.7rem); margin-bottom:6px}
+.hero p{margin-bottom:16px}
+.vh{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+@media (max-width:640px){
+  .search-row{flex-wrap:wrap}
+  .search{flex:1 1 100%}
+  .filter-sel{flex:1; max-width:none}
+  .logo{width:140px}
+  .hero{padding:16px 16px 18px}
+  .nt-sum{padding:10px 14px 0}
+}
 </style>
 </head>
 <body>
@@ -629,15 +654,16 @@ body{font-size:17px; line-height:1.6}
   <div class="wrap">
     <div class="search-row">
       <input class="search" id="search" type="search" placeholder="Search names, towns, businesses, skills" aria-label="Search the directory">
+      <select id="filterSel" class="filter-sel" aria-label="Filter"></select>
       <button type="button" class="btn ghost expand-all" id="expandAll" aria-pressed="false">Expand all</button>
 
     </div>
-    <div class="topics" id="topics" role="group" aria-label="Filter by kids"></div>
+    <div class="topics" id="topics" hidden></div>
   </div>
 </div>
 
 <main class="wrap">
-  <p class="count" id="count" aria-live="polite"></p>
+  <p class="count vh" id="count" aria-live="polite"></p>
   <div class="grid" id="grid"><p class="empty">Loading the room…</p></div>
   <section class="unclaimed" id="unclaimed" hidden aria-label="Profiles still to claim"></section>
   <p class="join-line">Not on the list? <button type="button" class="btn link inline" data-join>Add yourself</button></p>
@@ -811,10 +837,9 @@ const claimedOnly = () => entries.filter(e => Array.isArray(e.kids));
 function renderFilters(){
   const claimed = claimedOnly();
   const avail = FILTERS.map(([k,l,fn]) => [k, l, claimed.filter(fn).length]).filter(f => f[2] > 0);
-  topicsEl.hidden = !avail.length;
-  topicsEl.innerHTML =
-    `<button type="button" class="chip ${!filter?"on":""}" data-filter="" aria-pressed="${!filter}">Everyone</button>` +
-    avail.map(([k,l,c]) => `<button type="button" class="chip ${filter===k?"on":""}" data-filter="${k}" aria-pressed="${filter===k}">${esc(l)}<span class="n"> ${c}</span></button>`).join("");
+  $("#filterSel").innerHTML = `<option value="">Everyone (${claimed.length})</option>` +
+    avail.map(([k,l,c]) => `<option value="${k}" ${filter === k ? "selected" : ""}>${esc(l)} (${c})</option>`).join("");
+  $("#filterSel").hidden = !avail.length;
 }
 
 function matchesQuery(text){ return !q || q.split(/\s+/).every(w => norm(text).includes(w)); }
@@ -826,7 +851,8 @@ function matches(e){
 
 function render(){
   const claimed = claimedOnly(), unclaimed = entries.filter(e => !Array.isArray(e.kids));
-  const list = claimed.filter(matches);
+  const filled = e => (plain(e.home).trim() || plain(e.work).trim() || e.kids.length) ? 0 : 1;
+  const list = claimed.filter(matches).map((e, i) => [e, i]).sort((a, b) => filled(a[0]) - filled(b[0]) || a[1] - b[1]).map(x => x[0]);
   const kids = list.reduce((n, e) => n + e.kids.length, 0);
   countEl.textContent = claimed.length ? `${list.length} ${list.length === 1 ? "profile" : "profiles"} · ${kids} kids` : "";
 
@@ -1032,9 +1058,8 @@ function nameTag(e){
   const isOpen = allOpen || open.has(e.id), first = esc(e.name.split(/\s+/)[0]);
   const places = [e.livesIn && `Lives in ${esc(e.livesIn)}`, e.grewUp && `Grew up in ${esc(e.grewUp)}`].filter(Boolean).join(" · ");
   return `<article class="nt ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
-    <div class="nt-band" aria-hidden="true"><span class="nt-hello">Hello</span><span class="nt-my">my name is</span></div>
     <button type="button" class="nt-sum" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}" aria-controls="d-${esc(e.id)}">
-      <span class="nt-who"><span class="nt-name marker">${esc(e.name)}</span>
+      <span class="nt-who"><span class="nt-hi" aria-hidden="true"><b>Hello</b> my name is</span><span class="nt-name marker">${esc(e.name)}</span>
         <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}</span></span>
       <span class="nt-pitch">
         <span class="nt-line"><span class="nt-k">Home</span><span class="nt-v">${homeLine(e)}</span></span>
@@ -1073,7 +1098,7 @@ function setFilter(k){ filter = (k && filter !== k) ? k : null; renderFilters();
 
 function showPerson(id){
   if (!entries.some(e => e.id === id)) return;
-  if (filter || q){ filter = null; q = ""; $("#search").value = ""; renderFilters(); render(); }
+  if (filter || q){ filter = null; q = ""; $("#search").value = ""; $("#filterSel").value = ""; render(); }
   open.add(id); setOpenState(id, true);
   const el = document.getElementById("p-" + id);
   if (el){ el.scrollIntoView({ behavior: "smooth", block: "start" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
@@ -1095,6 +1120,7 @@ topicsEl.addEventListener("click", ev => {
   if (chip) setFilter(chip.dataset.filter);
 });
 $("#search").addEventListener("input", ev => { q = norm(ev.target.value); render(); });
+$("#filterSel").addEventListener("change", ev => { filter = ev.target.value || null; render(); });
 
 /* ---------- claim / edit flow: email → form → sent (no code) ---------- */
 const ed = { step:"email", email:recall("dc_email"), id:null, claimName:"", entry:null, pending:null, error:"", busy:false };
