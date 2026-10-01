@@ -551,6 +551,18 @@ body{font-size:17px; line-height:1.6}
   .nt-detail-pad{padding:4px 14px 18px}
   .nt-cols{grid-template-columns:1fr; gap:16px}
 }
+
+/* new profile bits */
+.three{display:grid; grid-template-columns:1fr 1fr auto; gap:0 12px; align-items:end}
+.three .field input, .three .field select, .two .field input, .two .field select{height:48px; box-sizing:border-box}
+.check-inline{display:flex; align-items:center; gap:8px; margin:14px 0 10px; font-size:.94rem; white-space:nowrap}
+.check-inline input, .check-pill input{accent-color:var(--rust); width:18px; height:18px}
+.checks{display:flex; flex-wrap:wrap; gap:8px}
+.check-pill{display:flex; align-items:center; gap:8px; padding:8px 12px; border:1.5px solid var(--hair); border-radius:10px; background:var(--paper); font-size:.92rem; cursor:pointer; min-height:44px}
+.check-pill:has(input:checked){border-color:var(--rust); box-shadow:inset 0 0 0 1px var(--rust)}
+.nt-stage{margin:-2px 0 10px; font-size:.88rem; color:var(--muted)}
+.chips-row.need li{border-color:var(--rust); border-style:dashed; background:var(--card)}
+@media (max-width:640px){ .three{grid-template-columns:1fr 1fr} .check-inline{grid-column:1 / -1; margin-top:0} }
 </style>
 </head>
 <body>
@@ -614,6 +626,10 @@ const editDlg = $("#editDlg"), editBody = $("#editBody"), unclaimedEl = $("#uncl
 
 let entries = [], filter = null, q = "";
 let AI_ON = false;
+const TEAM_SIZES = ["Just me","2–10","11–50","50+"];
+const SETUPS = { spouse:"Runs it with my spouse", home:"Work from home", cofounder:"Have a business partner", dayjob:"Still have a day job" };
+const SETUP_CARD = { spouse:"runs it with his wife", home:"works from home", cofounder:"has a business partner", dayjob:"still has a day job" };
+const SEED_SETUP = { "dave-ambrose":["spouse"], "mike-shai":["spouse"] };
 const INDUSTRIES = ["Home services & trades","Construction & real estate","Tech & software","AI & data","Marketing, brand & media",
   "Sales","Finance & investing","Health, fitness & wellness","Food, drink & hospitality","Retail & ecommerce",
   "Consulting & professional services","Education & coaching","Creative & design","Engineering & manufacturing","Other"];
@@ -769,7 +785,7 @@ function matchesQuery(text){ return !q || q.split(/\s+/).every(w => norm(text).i
 function matches(e){
   if (filter){ const f = FILTERS.find(x => x[0] === filter); if (f && !f[2](e)) return false; }
   return matchesQuery([e.name, kidsLabel(e), plain(e.home), ...e.askHome, e.company, plain(e.work), ...e.askWork,
-    e.livesIn || "", e.grewUp || "", e.industry || "", ...(e.skills || [])].join(" "));
+    e.livesIn || "", e.grewUp || "", e.industry || "", ...(e.skills || []), ...(e.needHelp || []), ...(e.kidsInto || []), ...(e.hobbies || [])].join(" "));
 }
 
 function render(){
@@ -811,13 +827,13 @@ const SEED_TAGS = {
   "ben-lozano":["Home services & trades",["franchising","home services","sales","outdoor living"]],
   "bryan-fillmer":["AI & data",["ai","automation","investing","consulting","software","fitness"]],
   "cody-caplinger":["Sales",["sales","scaling teams","fintech","health & performance"]],
-  "dave-ambrose":["Creative & design",["family business","operations","working with your spouse","music"]],
+  "dave-ambrose":["Creative & design",["family business","operations","hr & payroll"]],
   "eric-gonzalez":["AI & data",["ai","data","consulting","leadership"]],
   "greg-narain":["Tech & software",["ai","startups","saas","product","engineering"]],
   "harrison-brodwin":["Health, fitness & wellness",["mental health","counseling","private practice"]],
   "jorge-pongo":["Food, drink & hospitality",["coffee","sales","startups","investing","leadership"]],
   "lucas-droessler":["Tech & software",["software","cloud","ai","consulting"]],
-  "mike-shai":["Education & coaching",["product design","ecommerce","marketing","working with your spouse"]],
+  "mike-shai":["Education & coaching",["product design","ecommerce","marketing"]],
   "solomon-luna":["Home services & trades",["trades","security systems","construction","design"]],
   "tomas-marin":["Finance & investing",["payments","sales","small business"]],
   "trevor-schneider":["Home services & trades",["home services","sales","hiring"]],
@@ -825,7 +841,7 @@ const SEED_TAGS = {
   "michael-weber":["AI & data",["ai","automation","saas","consulting"]],
   "christopher-womack":["Food, drink & hospitality",["restaurants","finance","operations"]],
   "matthew-krekeler":["Marketing, brand & media",["video production","podcasting","storytelling"]],
-  "william-kowalski":["Finance & investing",["startups","investing","finance","working with your spouse"]],
+  "william-kowalski":["Finance & investing",["startups","investing","finance"]],
   "isaac-pacheco":["Retail & ecommerce",["menswear","sales","branding","podcasting"]],
   "corey-montez":["Engineering & manufacturing",["engineering","industrial design","product development"]],
   "ignacio-martinez":["Consulting & professional services",["small business","operations","sales"]],
@@ -879,8 +895,35 @@ function commonGround(me, other){
   const mt = tagsOf(me), ot = tagsOf(other);
   if (mt.industry && mt.industry === ot.industry && mt.industry !== "Other"){ why.push(`both in ${mt.industry.toLowerCase()}`); score += 2; }
   const shared = [...mt.skills].filter(s => ot.skills.has(s)).slice(0, 2);
-  if (shared.length){ why.push(`both into ${shared.join(" and ")}`); score += shared.length * 1.5; }
-  return { score, why };
+  if (shared.length){ why.push(`both know ${shared.join(" and ")}`); score += shared.length * 1.5; }
+  // help: what I need vs. what he can do (and the reverse)
+  const first = other.name.split(/\s+/)[0];
+  const helps = overlap(me.needHelp, [...ot.skills]);
+  if (helps.length){ why.unshift(`${first} can help with ${helps.slice(0, 2).join(" and ")}`); score += 4; }
+  const canGive = overlap(other.needHelp, [...mt.skills]);
+  if (canGive.length){ why.push(`you could help with ${canGive.slice(0, 2).join(" and ")}`); score += 2; }
+  const sameNeed = overlap(me.needHelp, other.needHelp);
+  if (sameNeed.length){ why.push(`both working on ${sameNeed[0]}`); score += 2; }
+  // business shape
+  if (me.teamSize && me.teamSize === other.teamSize){ why.push(me.teamSize === "Just me" ? "both solo operators" : `both run teams of ${me.teamSize}`); score += 1; }
+  if (me.serial && other.serial){ why.push("both serial founders"); score += 1; }
+  const ms = setupOf(me), os = setupOf(other);
+  if (ms.includes("spouse") && os.includes("spouse")){ why.push("both run a business with their spouse"); score += 3; }
+  if (ms.includes("dayjob") && os.includes("dayjob")){ why.push("both building it on the side"); score += 2; }
+  if (ms.includes("home") && os.includes("home")){ why.push("both work from home"); score += 1; }
+  if (ms.includes("cofounder") && os.includes("cofounder")){ why.push("both have a business partner"); score += 1; }
+  // kids' activities and hobbies
+  const ki = overlap(me.kidsInto, other.kidsInto);
+  if (ki.length){ why.push(`both have kids into ${ki[0]}`); score += 2; }
+  const hb = overlap(me.hobbies, other.hobbies);
+  if (hb.length){ why.push(`both into ${hb.slice(0, 2).join(" and ")}`); score += 2; }
+  return { score, why: why.slice(0, 3) };
+}
+// Tags match if equal or one contains the other ("hiring" ~ "hiring salespeople").
+function overlap(a, b){
+  const A = (a || []).map(norm).filter(Boolean), B = (b || []).map(norm).filter(Boolean), out = [];
+  A.forEach(x => { if (B.some(y => y === x || (x.length > 3 && y.includes(x)) || (y.length > 3 && x.includes(y))) && !out.includes(x)) out.push(x); });
+  return out;
 }
 function pairingsFor(e){
   return claimedOnly().filter(o => o.id !== e.id)
@@ -901,18 +944,22 @@ function placeLine(e){
 
 function detailHTML(e){
   const pairs = pairingsFor(e);
-  const chips = items => items.length ? `<ul class="chips-row">${items.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+  const chips = (items, cls) => items.length ? `<ul class="chips-row ${cls || ""}">${items.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
   return `
     <div class="nt-cols">
       <section class="nt-sec">
         <h3 class="nt-label">At home</h3>
         ${plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+        ${(e.kidsInto || []).length ? `<p class="nt-sub">Kids are into</p>${chips(e.kidsInto)}` : ""}
+        ${(e.hobbies || []).length ? `<p class="nt-sub">Off the clock</p>${chips(e.hobbies)}` : ""}
         ${e.askHome.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askHome)}` : ""}
       </section>
       <section class="nt-sec">
         <h3 class="nt-label">At work${e.company ? ` <span class="nt-co">${esc(e.company)}</span>` : ""}</h3>
+        ${stageLine(e) ? `<p class="nt-stage">${stageLine(e)}</p>` : ""}
         ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
-        ${(e.skills || []).length ? `<p class="nt-sub">Good at</p>${chips(e.skills)}` : ""}
+        ${(e.skills || []).length ? `<p class="nt-sub">Can help with</p>${chips(e.skills)}` : ""}
+        ${(e.needHelp || []).length ? `<p class="nt-sub">Could use help with</p>${chips(e.needHelp, "need")}` : ""}
         ${e.askWork.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askWork)}` : ""}
       </section>
     </div>
@@ -926,6 +973,16 @@ function detailHTML(e){
     <div class="nt-foot-row"><button type="button" class="btn link" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
       <button type="button" class="btn ghost sm nt-close" data-toggle="${esc(e.id)}">Show less</button></div>`;
 }
+
+function stageLine(e){
+  const bits = [];
+  if (e.teamSize) bits.push(e.teamSize === "Just me" ? "Solo operator" : `Team of ${e.teamSize}`);
+  if (e.years != null) bits.push(e.years === 0 ? "Just getting started" : `${e.years} ${e.years === 1 ? "year" : "years"} in`);
+  if (e.serial) bits.push("Not his first business");
+  setupOf(e).forEach(k => bits.push(SETUP_CARD[k].replace(/^./, c => c.toUpperCase())));
+  return bits.map(esc).join(" · ");
+}
+function setupOf(e){ return (e.setup && e.setup.length) ? e.setup : (SEED_SETUP[e.id] || []); }
 
 function kidsStickers(e){
   const known = e.kids.filter(k => k.age != null);
@@ -1069,6 +1126,10 @@ function profileFieldsHTML(src){
         <div class="field"><label for="fHome">Life at home</label>
           <span class="hint">What are the kids into? What's been the best part lately, and the hardest?</span>
           <textarea id="fHome" maxlength="1200">${esc(src.home)}</textarea></div>
+        <div class="field"><label for="fKidsInto">Kids are into</label><span class="hint">Sports, activities, obsessions. Separate with commas.</span>
+          <input id="fKidsInto" placeholder="soccer, dance, minecraft" value="${esc((src.kidsInto || []).join(", "))}"></div>
+        <div class="field"><label for="fHobbies">What I do for me</label><span class="hint">Off the clock, when you get the chance.</span>
+          <input id="fHobbies" placeholder="fishing, lifting, guitar" value="${esc((src.hobbies || []).join(", "))}"></div>
         <div class="field"><label for="fAskHome">Ask me about</label><span class="hint">Dad-life conversation starters, separated by commas</span>
           <input id="fAskHome" value="${esc(src.askHome.join(", "))}"></div>
       </fieldset>
@@ -1079,11 +1140,20 @@ function profileFieldsHTML(src){
           <div class="field"><label for="fCo">What you run</label><input id="fCo" maxlength="100" placeholder="Business name" value="${esc(src.company)}"></div>
           <div class="field"><label for="fInd">Industry</label><select id="fInd"><option value="">Pick one</option>${INDUSTRIES.map(x => `<option ${x === ind ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
         </div>
+        <div class="three">
+          <div class="field"><label for="fTeam">Team size</label><select id="fTeam"><option value="">Pick one</option>${TEAM_SIZES.map(x => `<option ${x === src.teamSize ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+          <div class="field"><label for="fYears">Years in it</label><input id="fYears" type="number" min="0" max="80" inputmode="numeric" value="${src.years ?? ""}"></div>
+          <label class="check-inline"><input type="checkbox" id="fSerial" ${src.serial ? "checked" : ""}> Not my first business</label>
+        </div>
+        <div class="field"><span class="label">How it fits with family</span>
+          <div class="checks">${Object.entries(SETUPS).map(([k, l]) => `<label class="check-pill"><input type="checkbox" value="${k}" ${((src.setup && src.setup.length ? src.setup : SEED_SETUP[src.id] || [])).includes(k) ? "checked" : ""}> ${l}</label>`).join("")}</div></div>
         <div class="field"><label for="fWork">Life at work</label>
           <span class="hint">What you do and who it's for. What's going well, and what's keeping you up at night? Wrap your company name in **double asterisks** to bold it.</span>
           <textarea id="fWork" maxlength="1200">${esc(src.work)}</textarea></div>
-        <div class="field"><label for="fSkills">Skills and experience</label><span class="hint">A few tags, separated by commas. These help match you with other dads.</span>
+        <div class="field"><label for="fSkills">I can help with</label><span class="hint">What other owners could ask you about. Separate with commas.</span>
           <input id="fSkills" placeholder="sales, hiring, franchising" value="${esc((src.skills && src.skills.length ? src.skills : (SEED_TAGS[src.id] || ["", []])[1]).join(", "))}"></div>
+        <div class="field"><label for="fNeed">I could use help with</label><span class="hint">What you'd love advice on right now. We'll point you to dads who can help.</span>
+          <input id="fNeed" placeholder="hiring, cash flow, delegating" value="${esc((src.needHelp || []).join(", "))}"></div>
         <div class="field"><label for="fAskWork">Ask me about</label><span class="hint">Business conversation starters, separated by commas</span>
           <input id="fAskWork" value="${esc(src.askWork.join(", "))}"></div>
       </fieldset>
@@ -1102,7 +1172,12 @@ function readProfile(){
     name: $("#fName").value.trim(), kids: readKids(), home: $("#fHome").value.trim(), askHome: splitList($("#fAskHome").value),
     company: $("#fCo").value.trim(), work: $("#fWork").value.trim(), askWork: splitList($("#fAskWork").value), links: readLinks(),
     livesIn: $("#fLives").value.trim(), grewUp: $("#fGrew").value.trim(), industry: $("#fInd").value,
-    skills: splitList($("#fSkills").value), story: $("#fStory") ? $("#fStory").value.trim() : ""
+    skills: splitList($("#fSkills").value), story: $("#fStory") ? $("#fStory").value.trim() : "",
+    needHelp: splitList($("#fNeed").value), teamSize: $("#fTeam").value,
+    years: $("#fYears").value === "" ? null : Math.max(0, Math.min(80, parseInt($("#fYears").value, 10) || 0)),
+    serial: $("#fSerial").checked,
+    setup: [...editBody.querySelectorAll(".checks input:checked")].map(x => x.value),
+    kidsInto: splitList($("#fKidsInto").value), hobbies: splitList($("#fHobbies").value)
   };
 }
 
@@ -1114,6 +1189,13 @@ function fillProfile(p){
   if (p.askHome && p.askHome.length) set("#fAskHome", p.askHome.join(", "));
   if (p.askWork && p.askWork.length) set("#fAskWork", p.askWork.join(", "));
   if (p.skills && p.skills.length) set("#fSkills", p.skills.join(", "));
+  if (p.needHelp && p.needHelp.length) set("#fNeed", p.needHelp.join(", "));
+  if (p.kidsInto && p.kidsInto.length) set("#fKidsInto", p.kidsInto.join(", "));
+  if (p.hobbies && p.hobbies.length) set("#fHobbies", p.hobbies.join(", "));
+  if (p.teamSize) set("#fTeam", p.teamSize);
+  if (p.years != null) set("#fYears", p.years);
+  if (p.serial) $("#fSerial").checked = true;
+  (p.setup || []).forEach(k => { const c = editBody.querySelector(`.checks input[value="${k}"]`); if (c) c.checked = true; });
   if (p.kids && p.kids.length){ $("#kidList").innerHTML = p.kids.map(kidRow).join(""); $("#kidList").classList.add("filled"); }
 }
 
@@ -1368,12 +1450,13 @@ editBody.addEventListener("submit", async ev => {
 const adminEl = $("#admin");
 const FIELDS = [["name","Name"],["kids","Kids"],["home","At home"],["askHome","Ask me about (home)"],
                 ["company","What he runs"],["work","At work"],["askWork","Ask me about (work)"],["links","Links"],
-                ["livesIn","Lives in"],["grewUp","Grew up"],["industry","Industry"],["skills","Skills"]];
+                ["livesIn","Lives in"],["grewUp","Grew up"],["industry","Industry"],["skills","Can help with"],["needHelp","Could use help with"],
+                ["teamSize","Team size"],["years","Years in it"],["serial","Serial founder"],["setup","Business setup"],["kidsInto","Kids are into"],["hobbies","Hobbies"]];
 let adminKey = recall("dc_admin");
 let importDraft = null;   // { source:"csv"|"luma", event, guests, skipped, rows, events, eventId }
 let adminLuma = null;     // { configured, linked, lastSync, autoSync }
 
-function fmt(k, v){ return k === "kids" ? kidsText(v) : k === "links" ? linksText(v) : Array.isArray(v) ? v.join(", ") : String(v || ""); }
+function fmt(k, v){ return k === "kids" ? kidsText(v) : k === "links" ? linksText(v) : k === "serial" ? (v ? "Yes" : "") : k === "years" ? (v == null ? "" : String(v)) : Array.isArray(v) ? v.join(", ") : String(v || ""); }
 function isAdminView(){ return location.hash === "#admin" || new URLSearchParams(location.search).has("admin"); }
 
 async function renderAdmin(){
@@ -1507,7 +1590,7 @@ function refreshPeople(){ const el = $("#pplTable"); if (el) el.innerHTML = peop
 function openAdminEdit(id){
   const p = id ? people.find(x => x.id === id) : null;
   ed.admin = p ? JSON.parse(JSON.stringify(p))
-    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], livesIn:"", grewUp:"", industry:"", skills:[], story:"", email:"", claimed:false, hidden:false, onList:true };
+    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], livesIn:"", grewUp:"", industry:"", skills:[], story:"", needHelp:[], teamSize:"", years:null, serial:false, setup:[], kidsInto:[], hobbies:[], email:"", claimed:false, hidden:false, onList:true };
   ed.error = ""; ed.step = "admin"; renderEdit(); editDlg.showModal();
 }
 function recentHTML(it){
@@ -1771,7 +1854,8 @@ window.addEventListener("hashchange", renderAdmin);
 /* ---------- in-browser demo backend (used only when API_URL is blank) ---------- */
 function makeDemo(){
   const pub = e => JSON.parse(JSON.stringify({ id:e.id, name:e.name, kids:e.kids, home:e.home, askHome:e.askHome, company:e.company, work:e.work, askWork:e.askWork, links:e.links || [],
-    livesIn:e.livesIn || "", grewUp:e.grewUp || "", industry:e.industry || "", skills:e.skills || [], story:e.story || "" }));
+    livesIn:e.livesIn || "", grewUp:e.grewUp || "", industry:e.industry || "", skills:e.skills || [], story:e.story || "",
+    needHelp:e.needHelp || [], teamSize:e.teamSize || "", years:e.years ?? null, serial:!!e.serial, setup:e.setup || [], kidsInto:e.kidsInto || [], hobbies:e.hobbies || [] }));
   // Rough stand-in for the AI writer so the demo works offline.
   function demoAI(text, name){
     const first = (name || "He").split(/\s+/)[0];
