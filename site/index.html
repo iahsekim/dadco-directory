@@ -486,6 +486,73 @@ body{font-size:17px; line-height:1.6}
   .search{flex:1 1 0}
   .expand-all{flex:0 0 auto; padding:.5rem .8rem}
 }
+
+/* ---------- "Hello, my name is" tags ---------- */
+.nt-list{display:flex; flex-direction:column; gap:24px; max-width:780px; margin:18px auto 64px}
+.toolbar > .wrap, main > .count, .join-cta, .unclaimed{max-width:780px; margin-left:auto; margin-right:auto}
+.toolbar > .wrap{padding:0 20px; box-sizing:content-box}
+main > .count{display:block}
+.toolbar .search, .toolbar .expand-all{height:48px; min-height:48px; padding-top:0; padding-bottom:0; line-height:1}
+.toolbar .search-row{align-items:center}
+.nt{background:var(--card); border:2.5px solid var(--outline); border-radius:18px; overflow:hidden; scroll-margin-top:150px; transition:box-shadow .2s}
+.nt-band{background:var(--rust); color:#fff; text-align:center; padding:12px 16px 11px; display:flex; flex-direction:column; align-items:center; line-height:1; border-bottom:2.5px solid var(--outline)}
+.nt-hello{font-weight:800; font-size:1.9rem; letter-spacing:.08em; text-transform:uppercase}
+.nt-my{font-size:.86rem; font-weight:600; letter-spacing:.03em; margin-top:5px}
+.nt-sum{all:unset; box-sizing:border-box; display:block; width:100%; cursor:pointer; padding:20px 26px 0; color:var(--ink)}
+.nt-sum:focus-visible{outline:3px solid var(--rust); outline-offset:-4px; border-radius:0 0 16px 16px}
+.nt-name{display:block; text-align:center; font-size:clamp(2.1rem,5.2vw,2.9rem); line-height:1.08; color:var(--marker); padding:2px 0 12px; margin:0 8% 12px; border-bottom:2px solid var(--hair)}
+.nt-meta{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px 16px; font-size:.95rem}
+.nt-kids{display:inline-flex; align-items:center; gap:6px}
+.nt-kids-label{font-weight:700; margin-right:2px}
+.nt-kids.none .nt-kids-label{font-weight:400; font-style:italic; color:var(--muted)}
+.age-dot{min-width:30px; height:30px; padding:0 7px; border-radius:999px; border:2px solid var(--outline); display:inline-grid; place-items:center; font-size:.95rem; line-height:1; background:var(--card); color:var(--ink)}
+.nt-place{color:var(--muted)}
+.nt-pitch{display:grid; gap:8px; margin-top:16px; padding-top:14px; border-top:1.5px dashed var(--hair)}
+.nt-line{display:grid; grid-template-columns:58px 1fr; gap:12px; align-items:baseline; font-size:1rem; line-height:1.5}
+.nt-k{font-size:.72rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
+.nt-v{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.nt-v strong{font-weight:600}
+.nt.is-open .nt-pitch{display:none}
+.nt-more{display:flex; justify-content:center; align-items:center; gap:6px; margin:18px -26px 0; padding:13px; border-top:1.5px solid var(--hair); color:var(--rust); font-weight:700; font-size:.97rem; transition:background .15s}
+.nt-sum:hover .nt-more{background:var(--paper)}
+.nt-more svg{width:18px; height:18px; transition:transform .3s ease}
+.nt.is-open .nt-more svg{transform:rotate(180deg)}
+.nt-detail{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s ease}
+.nt.is-open .nt-detail{grid-template-rows:1fr}
+.nt-detail-in{overflow:hidden; min-height:0}
+.nt-detail-pad{padding:8px 26px 24px}
+.nt-cols{display:grid; grid-template-columns:1fr 1fr; gap:22px 34px; padding-top:12px}
+.nt-label{margin:0 0 8px; font-size:.74rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--rust)}
+.nt-co{display:block; text-transform:none; letter-spacing:0; font-size:1.06rem; font-weight:700; color:var(--ink); margin-top:5px}
+.nt-sec .prose p{margin:0 0 10px; font-size:1rem; line-height:1.6}
+.nt-sub{margin:12px 0 6px; font-size:.82rem; font-weight:700; color:var(--muted)}
+.chips-row{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px}
+.chips-row li{border:1.5px solid var(--hair); border-radius:10px; padding:4px 11px; font-size:.86rem; line-height:1.35; background:var(--paper)}
+.nt-pairs, .nt-find{margin-top:22px; padding-top:18px; border-top:1.5px dashed var(--hair)}
+.mini-tags{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px}
+.mini-tag{all:unset; box-sizing:border-box; width:100%; height:100%; display:flex; flex-direction:column; border:2px solid var(--outline); border-radius:12px; overflow:hidden; cursor:pointer; background:var(--card); transition:transform .15s}
+.mini-tag:hover{transform:rotate(-1.2deg)}
+.mini-tag:focus-visible{outline:3px solid var(--rust); outline-offset:2px}
+.mini-band{background:var(--rust); color:#fff; font-weight:800; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; text-align:center; padding:4px; border-bottom:2px solid var(--outline)}
+.mini-name{font-size:1.3rem; line-height:1.15; text-align:center; padding:10px 10px 4px; color:var(--marker)}
+.mini-why{font-size:.83rem; line-height:1.4; color:var(--muted); text-align:center; padding:0 12px 12px}
+.nt-foot-row{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:20px}
+.nt-foot-row .btn.link{padding-left:0}
+.nt.flash{box-shadow:0 0 0 4px var(--rust)}
+@media (prefers-reduced-motion:reduce){ .nt-detail, .nt-more svg, .mini-tag{transition:none} .mini-tag:hover{transform:none} }
+@media (max-width:640px){
+  .nt-list{gap:16px; margin-top:12px}
+  .nt{scroll-margin-top:170px; border-radius:16px}
+  .nt-hello{font-size:1.45rem}
+  .nt-my{font-size:.8rem}
+  .nt-sum{padding:16px 16px 0}
+  .nt-name{margin:0 2% 10px; padding-bottom:10px}
+  .nt-line{grid-template-columns:48px 1fr; gap:10px; font-size:.97rem}
+  .nt-more{margin:14px -16px 0}
+  .nt-detail-pad{padding:4px 16px 20px}
+  .nt-cols{grid-template-columns:1fr; gap:18px}
+  .mini-tags{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -713,8 +780,8 @@ function render(){
   const kids = list.reduce((n, e) => n + e.kids.length, 0);
   countEl.textContent = claimed.length ? `${list.length} ${list.length === 1 ? "profile" : "profiles"} · ${kids} kids` : "";
 
-  grid.className = "list";
-  if (list.length) grid.innerHTML = list.map(row).join("");
+  grid.className = "nt-list";
+  if (list.length) grid.innerHTML = list.map(nameTag).join("");
   else {
     grid.className = "grid";
     grid.innerHTML = !claimed.length
@@ -836,87 +903,93 @@ function placeLine(e){
 
 function detailHTML(e){
   const pairs = pairingsFor(e);
-  const askList = (items) => items.length ? `<p class="ask-line"><span class="lbl">Ask him about</span> ${items.map(esc).join(" · ")}</p>` : "";
-  return `<div class="more">
-    <section class="more-sec home">
-      <h3>At home</h3>
-      ${plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : `<p class="missing">Nothing here yet.</p>`}
-      ${askList(e.askHome)}
-    </section>
-    <section class="more-sec work">
-      <h3>At work${e.company ? `: <span class="co">${esc(e.company)}</span>` : ""}</h3>
-      ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
-      ${(e.skills || []).length ? `<p class="ask-line"><span class="lbl">Good at</span> ${e.skills.map(esc).join(" · ")}</p>` : ""}
-      ${askList(e.askWork)}
-    </section>
-    ${pairs.length ? `<section class="more-sec pairs"><h3>You two should talk</h3><ul class="pair-list">${pairs.map(p => `
-      <li><button type="button" class="pair" data-goto="${esc(p.o.id)}"><strong>${esc(p.o.name)}</strong><span>${esc(p.why.join(", "))}</span></button></li>`).join("")}</ul></section>` : ""}
-    ${linksHTML(e) ? `<section class="more-sec find"><h3>Find him</h3>${linksHTML(e)}</section>` : ""}
-    <button type="button" class="btn link edit-mine" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
-  </div>`;
+  const chips = items => items.length ? `<ul class="chips-row">${items.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+  return `
+    <div class="nt-cols">
+      <section class="nt-sec">
+        <h3 class="nt-label">At home</h3>
+        ${plain(e.home).trim() ? `<div class="prose">${rich(e.home)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+        ${e.askHome.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askHome)}` : ""}
+      </section>
+      <section class="nt-sec">
+        <h3 class="nt-label">At work${e.company ? ` <span class="nt-co">${esc(e.company)}</span>` : ""}</h3>
+        ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+        ${(e.skills || []).length ? `<p class="nt-sub">Good at</p>${chips(e.skills)}` : ""}
+        ${e.askWork.length ? `<p class="nt-sub">Ask him about</p>${chips(e.askWork)}` : ""}
+      </section>
+    </div>
+    ${pairs.length ? `<section class="nt-pairs">
+      <h3 class="nt-label">You should meet</h3>
+      <ul class="mini-tags">${pairs.map(p => `<li><button type="button" class="mini-tag" data-goto="${esc(p.o.id)}">
+        <span class="mini-band">Hello</span>
+        <span class="mini-name marker">${esc(p.o.name)}</span>
+        <span class="mini-why">${esc(p.why.join(" · "))}</span></button></li>`).join("")}</ul>
+    </section>` : ""}
+    ${linksHTML(e) ? `<section class="nt-find"><h3 class="nt-label">Find him</h3>${linksHTML(e)}</section>` : ""}
+    <div class="nt-foot-row"><button type="button" class="btn link" data-edit="${esc(e.id)}">Is this you? Edit your profile</button>
+      <button type="button" class="btn ghost sm nt-close" data-toggle="${esc(e.id)}">Show less</button></div>`;
 }
 
-function card(e){
-  const isOpen = allOpen || open.has(e.id);
-  return `<article class="tag ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
-    <div class="band"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
-    <div class="tag-body">
-      <h2 class="name marker">${esc(e.name)}</h2>
-      ${placeLine(e)}
-      <p class="home-snip">${homeLine(e)}</p>
-      <p class="work-line"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</p>
-      ${isOpen ? detailHTML(e) : ""}
-      <button type="button" class="btn expand" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More about " + esc(e.name.split(/\s+/)[0])}</button>
-    </div>
-    <div class="foot"></div>
+function kidsStickers(e){
+  const known = e.kids.filter(k => k.age != null);
+  return `<span class="nt-kids ${e.kids.length ? "" : "none"}"><span class="nt-kids-label">${esc(kidsLabel(e))}</span>${known.map(k =>
+    `<span class="age-dot marker" aria-label="age ${k.age === 0 ? "under 1" : k.age}">${esc(ageText(k.age))}</span>`).join("")}</span>`;
+}
+
+function nameTag(e){
+  const isOpen = allOpen || open.has(e.id), first = esc(e.name.split(/\s+/)[0]);
+  const places = [e.livesIn && `Lives in ${esc(e.livesIn)}`, e.grewUp && `Grew up in ${esc(e.grewUp)}`].filter(Boolean).join(" · ");
+  return `<article class="nt ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
+    <div class="nt-band" aria-hidden="true"><span class="nt-hello">Hello</span><span class="nt-my">my name is</span></div>
+    <button type="button" class="nt-sum" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}" aria-controls="d-${esc(e.id)}">
+      <span class="nt-name marker">${esc(e.name)}</span>
+      <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}</span>
+      <span class="nt-pitch">
+        <span class="nt-line"><span class="nt-k">Home</span><span class="nt-v">${homeLine(e)}</span></span>
+        <span class="nt-line"><span class="nt-k">Work</span><span class="nt-v">${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</span></span>
+      </span>
+      <span class="nt-more"><span class="nt-more-txt">${isOpen ? "Show less" : `More about ${first}`}</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>
+    <div class="nt-detail" id="d-${esc(e.id)}" role="region" aria-label="More about ${first}"><div class="nt-detail-in"><div class="nt-detail-pad">${detailHTML(e)}</div></div></div>
   </article>`;
 }
 
-function row(e){
-  const isOpen = allOpen || open.has(e.id);
-  return `<article class="row ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
-    <div class="row-kids"><span class="kid-label">${esc(kidsLabel(e))}</span>${agesHTML(e)}</div>
-    <div class="row-main">
-      <h2 class="name marker">${esc(e.name)}</h2>
-      ${placeLine(e)}
-      <p class="row-home">${homeLine(e)}</p>
-    </div>
-    <div class="row-work"><span class="lbl">At work</span> ${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}
-      <button type="button" class="btn expand sm" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}">${isOpen ? "Show less" : "More about " + esc(e.name.split(/\s+/)[0])}</button></div>
-    ${isOpen ? `<div class="row-more">${detailHTML(e)}</div>` : ""}
-  </article>`;
+// Open/close without re-rendering, so the page doesn't jump.
+function setOpenState(id, on){
+  const el = document.getElementById("p-" + id); if (!el) return;
+  el.classList.toggle("is-open", on);
+  const b = el.querySelector(".nt-sum"); b.setAttribute("aria-expanded", String(on));
+  el.querySelector(".nt-more-txt").textContent = on ? "Show less" : `More about ${entries.find(x => x.id === id).name.split(/\s+/)[0]}`;
 }
-
-$("#expandAll").addEventListener("click", ev => {
-  allOpen = !allOpen; open.clear();
-  ev.currentTarget.setAttribute("aria-pressed", String(allOpen));
-  ev.currentTarget.textContent = allOpen ? "Collapse all" : "Expand all";
-  render();
+function toggleOne(id){
+  if (allOpen){ allOpen = false; claimedOnly().forEach(e => open.add(e.id)); syncExpandAll(); }
+  const on = !open.has(id);
+  if (on) open.add(id); else open.delete(id);
+  setOpenState(id, on);
+  if (!on){ const el = document.getElementById("p-" + id); if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" }); }
+}
+function syncExpandAll(){
+  const b = $("#expandAll"); b.textContent = allOpen ? "Collapse all" : "Expand all"; b.setAttribute("aria-pressed", String(allOpen));
+}
+$("#expandAll").addEventListener("click", () => {
+  allOpen = !allOpen; open.clear(); syncExpandAll();
+  claimedOnly().forEach(e => setOpenState(e.id, allOpen));
 });
 
 function setFilter(k){ filter = (k && filter !== k) ? k : null; renderFilters(); render(); }
 
 function showPerson(id){
   if (!entries.some(e => e.id === id)) return;
-  if (filter || q){ filter = null; q = ""; $("#search").value = ""; renderFilters(); }
-  open.add(id); render();
+  if (filter || q){ filter = null; q = ""; $("#search").value = ""; renderFilters(); render(); }
+  open.add(id); setOpenState(id, true);
   const el = document.getElementById("p-" + id);
   if (el){ el.scrollIntoView({ behavior: "smooth", block: "start" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
 }
 function openDetail(id){ showPerson(id); }
 
 grid.addEventListener("click", ev => {
-  const t = ev.target.closest("[data-toggle]");
-  if (t){
-    const id = t.dataset.toggle;
-    if (allOpen){ allOpen = false; const b = $("#expandAll"); b.textContent = "Expand all"; b.setAttribute("aria-pressed","false");
-      claimedOnly().forEach(e => open.add(e.id)); open.delete(id); }
-    else if (open.has(id)) open.delete(id); else open.add(id);
-    render();
-    const el = document.getElementById("p-" + id);
-    if (el && !open.has(id) && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
-    return;
-  }
+  const t = ev.target.closest("[data-toggle]"); if (t){ toggleOne(t.dataset.toggle); return; }
   const g = ev.target.closest("[data-goto]"); if (g){ showPerson(g.dataset.goto); return; }
   const ed2 = ev.target.closest("[data-edit]"); if (ed2){ openEdit(ed2.dataset.edit); return; }
 });
