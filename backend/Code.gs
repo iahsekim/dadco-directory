@@ -29,7 +29,11 @@ const PENDING = 'Pending';
 // kids column: comma-separated "age girl|boy", e.g. "7 girl, 11 girl" or "? boy" when the age is unknown.
 // links column: one per line, "type: value" — types: instagram, twitter, website, phone, email, other.
 const COLS = ['id', 'email', 'name', 'kids', 'home', 'askHome', 'company', 'work', 'askWork', 'links', 'claimed', 'hidden', 'updatedAt',
-  'livesIn', 'grewUp', 'industry', 'skills', 'story'];
+  'livesIn', 'grewUp', 'industry', 'skills', 'story',
+  'needHelp', 'teamSize', 'years', 'serial', 'setup', 'kidsInto', 'hobbies'];
+// skills = "I can help with". setup = how the business fits the family (keys below).
+const TEAM_SIZES = ['Just me', '2–10', '11–50', '50+'];
+const SETUPS = ['spouse', 'home', 'cofounder', 'dayjob'];
 // Missing columns (like livesIn on an older Sheet) are added automatically the first time they're written.
 const INDUSTRIES = ['Home services & trades', 'Construction & real estate', 'Tech & software', 'AI & data', 'Marketing, brand & media',
   'Sales', 'Finance & investing', 'Health, fitness & wellness', 'Food, drink & hospitality', 'Retail & ecommerce',
@@ -459,7 +463,14 @@ function toPublic_(o) {
     livesIn: String(o.livesIn || ''),
     grewUp: String(o.grewUp || ''),
     industry: String(o.industry || ''),
-    skills: splitList_(o.skills)
+    skills: splitList_(o.skills),
+    needHelp: splitList_(o.needHelp),
+    teamSize: String(o.teamSize || ''),
+    years: o.years === '' || o.years == null || isNaN(parseInt(o.years, 10)) ? null : parseInt(o.years, 10),
+    serial: flag_(o.serial),
+    setup: splitList_(o.setup).filter(k => SETUPS.indexOf(k) >= 0),
+    kidsInto: splitList_(o.kidsInto),
+    hobbies: splitList_(o.hobbies)
   };
 }
 
@@ -625,10 +636,17 @@ function aiProfile_(text, name) {
     'company: business name or a few words on what he runs, or "".',
     'industry: exactly one of: ' + INDUSTRIES.join(' | ') + '.',
     'work: 1-2 short sentences, third person, an elevator pitch: what he does, who it\'s for, and anything he said is going well or hard. Wrap the business name in **double asterisks**.',
-    'skills: up to 6 short lowercase tags for his skills, career path, or expertise (e.g. "sales", "franchising", "software").',
+    'skills: up to 6 short lowercase tags for what he could help other owners with: skills, career path, expertise (e.g. "sales", "franchising", "hiring").',
+    'needHelp: up to 4 short lowercase tags for what he said he could use help or advice with, or [].',
+    'teamSize: exactly one of "Just me" | "2–10" | "11–50" | "50+" based on how many people work in the business, or "" if unclear.',
+    'years: whole number of years he has run the business, or null.',
+    'serial: true only if he says this is not his first business.',
+    'setup: array with any of "spouse" (runs it with his wife/spouse), "home" (works from home), "cofounder" (has a business partner), "dayjob" (still has a day job), only when stated.',
+    'kidsInto: up to 5 short lowercase tags for the kids\' activities and interests (e.g. "soccer", "dance", "minecraft").',
+    'hobbies: up to 5 short lowercase tags for what he does for himself (e.g. "fishing", "lifting", "guitar").',
     'askHome: up to 3 short dad-life conversation starters drawn from his notes.',
     'askWork: up to 3 short business conversation starters drawn from his notes.',
-    'Use only what he wrote. Never invent facts, places, ages, or numbers. Leave a field empty when it is not mentioned. Plain, warm, specific; no hype words.'
+    'Use only what he wrote. For any list with nothing mentioned, use []. Never invent facts, places, ages, or numbers. Leave a field empty when it is not mentioned. Plain, warm, specific; no hype words.'
   ].join('\n');
   const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
@@ -753,7 +771,10 @@ function profileFields_(d) {
     name: d.name, kids: kidsText_(d.kids), home: d.home, askHome: (d.askHome || []).join(', '),
     company: d.company, work: d.work, askWork: (d.askWork || []).join(', '), links: linksText_(d.links),
     livesIn: d.livesIn || '', grewUp: d.grewUp || '', industry: d.industry || '', skills: (d.skills || []).join(', '),
-    story: d.story || ''
+    story: d.story || '',
+    needHelp: (d.needHelp || []).join(', '), teamSize: d.teamSize || '', years: d.years == null ? '' : String(d.years),
+    serial: d.serial ? 'TRUE' : '', setup: (d.setup || []).join(', '),
+    kidsInto: (d.kidsInto || []).join(', '), hobbies: (d.hobbies || []).join(', ')
   };
 }
 
@@ -854,7 +875,14 @@ function clean_(e) {
     grewUp: text(e.grewUp, 60),
     industry: INDUSTRIES.indexOf(e.industry) >= 0 ? e.industry : '',
     skills: list(e.skills),
-    story: text(e.story, 3000)
+    story: text(e.story, 3000),
+    needHelp: list(e.needHelp),
+    teamSize: TEAM_SIZES.indexOf(e.teamSize) >= 0 ? e.teamSize : '',
+    years: (() => { const n = parseInt(e.years, 10); return isNaN(n) ? null : Math.max(0, Math.min(80, n)); })(),
+    serial: !!e.serial,
+    setup: (Array.isArray(e.setup) ? e.setup : []).filter(k => SETUPS.indexOf(k) >= 0),
+    kidsInto: list(e.kidsInto),
+    hobbies: list(e.hobbies)
   };
   if (!out.name) throw new Error('Add your name.');
   return out;
