@@ -683,6 +683,11 @@ body{font-size:17px; line-height:1.6}
   .dc-actions .btn.primary{padding:.45rem .7rem; font-size:.85rem}
   .disc-head{align-items:center}
 }
+
+.bg-badge{font-size:.72rem; font-weight:800; letter-spacing:.04em; padding:2px 8px; border-radius:999px; background:var(--ink); color:var(--paper)}
+.nt-tags.career{align-items:center}
+.nt-tags .step{color:var(--rust); font-weight:800; margin:0 1px}
+.bg-checks{margin-top:6px}
 </style>
 </head>
 <body>
@@ -762,6 +767,7 @@ let AI_ON = false;
 const TEAM_SIZES = ["Just me","2–10","11–50","50+"];
 const SETUPS = { spouse:"Runs it with my spouse", home:"Work from home", cofounder:"Have a business partner", dayjob:"Still have a day job" };
 const SETUP_CARD = { spouse:"runs it with his wife", home:"works from home", cofounder:"has a business partner", dayjob:"still has a day job" };
+const BACKGROUNDS = { veteran:"Veteran", athlete:"Former athlete", corporate:"Left corporate", firstgen:"First-gen founder", immigrant:"Immigrant founder" };
 const SEED_SETUP = { "dave-ambrose":["spouse"], "mike-shai":["spouse"] };
 const INDUSTRIES = ["Home services & trades","Construction & real estate","Tech & software","AI & data","Marketing, brand & media",
   "Sales","Finance & investing","Health, fitness & wellness","Food, drink & hospitality","Retail & ecommerce",
@@ -918,7 +924,7 @@ function matchesQuery(text){ return !q || q.split(/\s+/).every(w => norm(text).i
 function matches(e){
   if (filter){ const f = FILTERS.find(x => x[0] === filter); if (f && !f[2](e)) return false; }
   return matchesQuery([e.name, kidsLabel(e), plain(e.home), ...e.askHome, e.company, plain(e.work), ...e.askWork,
-    e.livesIn || "", e.grewUp || "", e.industry || "", ...(e.skills || []), ...(e.needHelp || []), ...(e.kidsInto || []), ...(e.hobbies || [])].join(" "));
+    e.livesIn || "", e.grewUp || "", e.industry || "", ...(e.skills || []), ...(e.needHelp || []), ...(e.kidsInto || []), ...(e.hobbies || []), ...(e.career || []), ...(e.background || []).map(k => BACKGROUNDS[k] || k)].join(" "));
 }
 
 function render(){
@@ -1046,6 +1052,15 @@ function commonGround(me, other){
   if (ms.includes("dayjob") && os.includes("dayjob")){ why.push("both building it on the side"); score += 2; }
   if (ms.includes("home") && os.includes("home")){ why.push("both work from home"); score += 1; }
   if (ms.includes("cofounder") && os.includes("cofounder")){ why.push("both have a business partner"); score += 1; }
+  // career paths: past industries he shares with your path, industry, or skills
+  const myPath = [...(me.career || []), mt.industry, ...mt.skills].filter(Boolean);
+  const pathHit = overlap(other.career, myPath).concat(overlap(me.career, [...(other.career || []), ot.industry, ...ot.skills].filter(Boolean))).filter((x, i, a) => a.indexOf(x) === i);
+  if (pathHit.length){ why.push(`both have worked in ${pathHit.slice(0, 2).join(" and ")}`); score += 2 + Math.min(pathHit.length, 2); }
+  // shared background
+  const mb = me.background || [], ob = other.background || [];
+  if (mb.includes("veteran") && ob.includes("veteran")){ why.unshift("both veterans"); score += 5; }
+  [["athlete","both former athletes"],["corporate","both left corporate to build their own thing"],["firstgen","both first-gen founders"],["immigrant","both immigrant founders"]]
+    .forEach(([k, txt]) => { if (mb.includes(k) && ob.includes(k)){ why.push(txt); score += 2; } });
   // kids' activities and hobbies
   const ki = overlap(me.kidsInto, other.kidsInto);
   if (ki.length){ why.push(`both have kids into ${ki[0]}`); score += 2; }
@@ -1056,7 +1071,12 @@ function commonGround(me, other){
 // Tags match if equal or one contains the other ("hiring" ~ "hiring salespeople").
 function overlap(a, b){
   const A = (a || []).map(norm).filter(Boolean), B = (b || []).map(norm).filter(Boolean), out = [];
-  A.forEach(x => { if (B.some(y => y === x || (x.length > 3 && y.includes(x)) || (y.length > 3 && x.includes(y))) && !out.includes(x)) out.push(x); });
+  A.forEach(x => {
+    const y = B.find(y => y === x || (x.length > 3 && y.includes(x)) || (y.length > 3 && x.includes(y)));
+    if (y == null) return;
+    const shared = y.length < x.length ? y : x;   // report the common part: "software", not "defense software"
+    if (!out.includes(shared)) out.push(shared);
+  });
   return out;
 }
 function pairingsFor(e){
@@ -1094,6 +1114,7 @@ function detailHTML(e){
         ${e.company ? `<p class="nt-co">${esc(e.company)}</p>` : ""}
         ${stageLine(e) ? `<p class="nt-stage">${stageLine(e)}</p>` : ""}
         ${plain(e.work).trim() ? `<div class="prose">${rich(e.work)}</div>` : `<p class="missing">Nothing here yet.</p>`}
+        ${(e.career || []).length ? `<p class="nt-tags career"><span class="nt-tl">Career path</span>${e.career.map(esc).map(x => `<span class="nt-tag">${x}</span>`).join('<span class="step" aria-hidden="true">›</span>')}</p>` : ""}
         ${line("Can help with", (e.skills && e.skills.length) ? e.skills : (SEED_TAGS[e.id] || ["", []])[1])}
         ${line("Looking for help with", e.needHelp, "need")}
       </section>
@@ -1132,7 +1153,7 @@ function nameTag(e){
   return `<article class="nt ${isOpen ? "is-open" : ""}" id="p-${esc(e.id)}" data-id="${esc(e.id)}">
     <button type="button" class="nt-sum" data-toggle="${esc(e.id)}" aria-expanded="${isOpen}" aria-controls="d-${esc(e.id)}">
       <span class="nt-who"><span class="nt-hi" aria-hidden="true"><b>Hello</b> my name is</span><span class="nt-name marker">${esc(e.name)}</span>
-        <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}</span></span>
+        <span class="nt-meta">${kidsStickers(e)}${places ? `<span class="nt-place">${places}</span>` : ""}${(e.background || []).map(k => `<span class="bg-badge">${esc(BACKGROUNDS[k] || k)}</span>`).join("")}</span></span>
       <span class="nt-pitch">
         <span class="nt-line"><span class="nt-k">Home</span><span class="nt-v">${homeLine(e)}</span></span>
         <span class="nt-line"><span class="nt-k">Work</span><span class="nt-v">${e.company ? esc(e.company) : `<span class="missing">Not added yet</span>`}</span></span>
@@ -1255,7 +1276,9 @@ function profileFieldsHTML(src){
         <div class="two">
           <div class="field"><label for="fLives">Where you live</label><input id="fLives" maxlength="60" placeholder="Arvada, CO" value="${esc(src.livesIn || "")}"></div>
           <div class="field"><label for="fGrew">Where you grew up</label><input id="fGrew" maxlength="60" placeholder="Cleveland, OH" value="${esc(src.grewUp || "")}"></div>
-        </div>`, true)}
+        </div>
+        <div class="field"><span class="label">A bit of background <span class="hint">optional</span></span>
+          <div class="checks bg-checks">${Object.entries(BACKGROUNDS).map(([k, l]) => `<label class="check-pill"><input type="checkbox" value="${k}" ${(src.background || []).includes(k) ? "checked" : ""}> ${l}</label>`).join("")}</div></div>`, true)}
 
       ${sec("Kids and home", "Ages, what they're into, life lately", `
         <div class="field"><span class="label">Kids</span><span class="hint">Use 0 for babies. Leave an age blank to keep it private.</span>
@@ -1273,6 +1296,8 @@ function profileFieldsHTML(src){
         </div>
         <div class="field"><label for="fWork">Life at work</label><span class="hint">What you do, and what's going well or keeping you up. **Bold** your company name with asterisks.</span>
           <textarea id="fWork" rows="3" maxlength="1200">${esc(src.work)}</textarea></div>
+        <div class="field"><label for="fCareer">Career path</label><span class="hint">Where you worked before this, oldest first.</span>
+          <input id="fCareer" placeholder="defense software, real estate, insurance" value="${esc((src.career || []).join(", "))}"></div>
         <div class="field"><label for="fSkills">I can help with</label><input id="fSkills" placeholder="sales, hiring, franchising" value="${esc(skills.join(", "))}"></div>
         <div class="field"><label for="fNeed">I could use help with</label><input id="fNeed" placeholder="cash flow, delegating" value="${esc((src.needHelp || []).join(", "))}"></div>`, true)}
 
@@ -1302,7 +1327,9 @@ function readProfile(){
     needHelp: splitList($("#fNeed").value), teamSize: $("#fTeam").value,
     years: $("#fYears").value === "" ? null : Math.max(0, Math.min(80, parseInt($("#fYears").value, 10) || 0)),
     serial: $("#fSerial").checked,
-    setup: [...editBody.querySelectorAll(".checks input:checked")].map(x => x.value),
+    setup: [...editBody.querySelectorAll(".checks:not(.bg-checks) input:checked")].map(x => x.value),
+    background: [...editBody.querySelectorAll(".bg-checks input:checked")].map(x => x.value),
+    career: splitList($("#fCareer").value),
     kidsInto: splitList($("#fKidsInto").value), hobbies: splitList($("#fHobbies").value)
   };
 }
@@ -1324,7 +1351,9 @@ function fillProfile(p){
   if (p.kids && p.kids.length) editBody.querySelectorAll(".fsec")[1] && (editBody.querySelectorAll(".fsec")[1].open = true);
   if (p.years != null) set("#fYears", p.years);
   if (p.serial) $("#fSerial").checked = true;
-  (p.setup || []).forEach(k => { const c = editBody.querySelector(`.checks input[value="${k}"]`); if (c) c.checked = true; });
+  (p.setup || []).forEach(k => { const c = editBody.querySelector(`.checks:not(.bg-checks) input[value="${k}"]`); if (c) c.checked = true; });
+  (p.background || []).forEach(k => { const c = editBody.querySelector(`.bg-checks input[value="${k}"]`); if (c) c.checked = true; });
+  if (p.career && p.career.length) set("#fCareer", p.career.join(", "));
   if (p.kids && p.kids.length){ $("#kidList").innerHTML = p.kids.map(kidRow).join(""); $("#kidList").classList.add("filled"); }
 }
 
@@ -1576,7 +1605,7 @@ const adminEl = $("#admin");
 const FIELDS = [["name","Name"],["kids","Kids"],["home","At home"],["askHome","Ask me about (home)"],
                 ["company","What he runs"],["work","At work"],["askWork","Ask me about (work)"],["links","Links"],
                 ["livesIn","Lives in"],["grewUp","Grew up"],["industry","Industry"],["skills","Can help with"],["needHelp","Could use help with"],
-                ["teamSize","Team size"],["years","Years in it"],["serial","Serial founder"],["setup","Business setup"],["kidsInto","Kids are into"],["hobbies","Hobbies"]];
+                ["teamSize","Team size"],["years","Years in it"],["serial","Serial founder"],["setup","Business setup"],["kidsInto","Kids are into"],["hobbies","Hobbies"],["career","Career path"],["background","Background"]];
 let adminKey = recall("dc_admin");
 let importDraft = null;   // { source:"csv"|"luma", event, guests, skipped, rows, events, eventId }
 let adminLuma = null;     // { configured, linked, lastSync, autoSync }
@@ -1714,7 +1743,7 @@ function refreshPeople(){ const el = $("#pplTable"); if (el) el.innerHTML = peop
 function openAdminEdit(id){
   const p = id ? people.find(x => x.id === id) : null;
   ed.admin = p ? JSON.parse(JSON.stringify(p))
-    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], livesIn:"", grewUp:"", industry:"", skills:[], story:"", needHelp:[], teamSize:"", years:null, serial:false, setup:[], kidsInto:[], hobbies:[], email:"", claimed:false, hidden:false, onList:true };
+    : { id:"", name:"", kids:[], home:"", askHome:[], company:"", work:"", askWork:[], links:[], livesIn:"", grewUp:"", industry:"", skills:[], story:"", needHelp:[], teamSize:"", years:null, serial:false, setup:[], kidsInto:[], hobbies:[], career:[], background:[], email:"", claimed:false, hidden:false, onList:true };
   ed.error = ""; ed.step = "admin"; renderEdit(); editDlg.showModal();
 }
 function recentHTML(it){
@@ -1979,7 +2008,7 @@ window.addEventListener("hashchange", renderAdmin);
 function makeDemo(){
   const pub = e => JSON.parse(JSON.stringify({ id:e.id, name:e.name, kids:e.kids, home:e.home, askHome:e.askHome, company:e.company, work:e.work, askWork:e.askWork, links:e.links || [],
     livesIn:e.livesIn || "", grewUp:e.grewUp || "", industry:e.industry || "", skills:e.skills || [], story:e.story || "",
-    needHelp:e.needHelp || [], teamSize:e.teamSize || "", years:e.years ?? null, serial:!!e.serial, setup:e.setup || [], kidsInto:e.kidsInto || [], hobbies:e.hobbies || [] }));
+    needHelp:e.needHelp || [], teamSize:e.teamSize || "", years:e.years ?? null, serial:!!e.serial, setup:e.setup || [], kidsInto:e.kidsInto || [], hobbies:e.hobbies || [], career:e.career || [], background:e.background || [] }));
   // Rough stand-in for the AI writer so the demo works offline.
   function demoAI(text, name){
     const first = (name || "He").split(/\s+/)[0];
@@ -2185,7 +2214,7 @@ const FACTS = {
   "harrison-brodwin":["A counselor who thinks dads probably need therapy too","Runs his own practice focused on men's mental health"],
   "jorge-pongo":["Traded SaaS sales leadership for the coffee business","Currently surviving life with a 2-year-old and a 4-year-old"],
   "lucas-droessler":["Calls himself a professional “solutioner”","Runs a tech studio that builds cloud, data, and web platforms"],
-  "mike-shai":["Started a wrestling education company with his wife","Product designer turned founder of this very meetup"],
+  "mike-shai":["Started a wrestling education company with his wife","Worked in defense software, real estate, insurance, swag logistics, and payments before co-founding a wrestling company","Product designer turned founder of this very meetup"],
   "solomon-luna":["Installs security cameras and access control, with a background in art and home design"],
   "tomas-marin":["Has spent 20 years on the part business owners ignore until it gets expensive: payment fees"],
   "trevor-schneider":["Built a home-services company that creates flexible jobs for single dads"],
@@ -2206,19 +2235,25 @@ const FACTS = {
 const NUM = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 // Facts written from what people put in their profiles, so new and edited profiles show up too.
 function autoFacts(e){
-  const out = [], lst = a => a.length > 1 ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
+  const out = [], extra = [], lst = a => a.length > 1 ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
   const n = e.kids.length, girls = n && e.kids.every(k => k.is === "girl"), boys = n && e.kids.every(k => k.is === "boy");
+  const bg = e.background || [];
+  if ((e.career || []).length >= 2) out.push(`Worked in ${lst(e.career.slice(0, 5))} before ${e.company ? `starting ${e.company}` : "going out on his own"}`);
+  if (bg.includes("veteran")) out.push(`A veteran who now ${e.company ? `runs ${e.company}` : "runs his own business"}`);
+  if (bg.includes("athlete")) out.push("Former athlete turned business owner");
+  if (bg.includes("immigrant")) out.push(`Immigrant founder${e.company ? ` behind ${e.company}` : ""}`);
   if (setupOf(e).includes("spouse") && e.company) out.push(`Runs ${e.company} with his wife`);
   if (n >= 3) out.push(`Dad of ${NUM[n] || n}${girls ? " girls" : boys ? " boys" : ""}${e.company ? `, while running ${e.company}` : ""}`);
   if (e.grewUp && e.livesIn) out.push(`Grew up in ${e.grewUp}, now lives in ${e.livesIn}`);
   if ((e.kidsInto || []).length) out.push(`Has kids who are into ${lst(e.kidsInto.slice(0, 3))}`);
-  if ((e.hobbies || []).length) out.push(`Off the clock, he's into ${lst(e.hobbies.slice(0, 2))}`);
-  if (e.serial && e.years != null) out.push(`On his second act or more as a founder, ${e.years} years into this one`);
+  if (e.serial && e.years != null && e.years > 0) out.push(`Serial founder, ${e.years} years into this one`);
   if ((e.needHelp || []).length) out.push(`Would love advice on ${lst(e.needHelp.slice(0, 2))}`);
   if (setupOf(e).includes("dayjob")) out.push("Building his business on the side, around a day job");
-  return out;
+  if ((e.hobbies || []).length) extra.push(`Off the clock, he's into ${lst(e.hobbies.slice(0, 2))}`);
+  return { main: out, extra };
 }
-function factsFor(e){ return [...(FACTS[e.id] || []), ...autoFacts(e)]; }
+// Hobbies only show when there's nothing more telling to say about someone.
+function factsFor(e){ const a = autoFacts(e), main = [...(FACTS[e.id] || []), ...a.main]; return main.length ? main : a.extra; }
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 function renderDiscover(){
