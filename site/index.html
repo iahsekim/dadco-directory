@@ -400,7 +400,7 @@ a.lnk:hover .link-lbl{color:inherit}
     <div>
       <h1 class="marker">Who's in the room</h1>
       <p class="event-line" id="eventLine" hidden></p>
-      <p>Everyone here is raising kids and running a business. Ask about both, the good days and the hard ones. Find your name below to claim your profile.</p>
+      <p>Everyone here is raising kids and running a business. Ask about both, the good days and the hard ones. Spot yourself? Tap Edit your profile to update it or take it down.</p>
       <button class="btn primary" id="editBtn" type="button">Edit your profile</button>
     </div>
   </header>
@@ -592,7 +592,7 @@ function renderEvent(ev){
     (url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">RSVP on Luma</a>` : "");
 }
 
-const claimedOnly = () => entries.filter(e => e.claimed);
+const claimedOnly = () => entries.filter(e => Array.isArray(e.kids));
 
 function renderFilters(){
   const claimed = claimedOnly();
@@ -610,7 +610,7 @@ function matches(e){
 }
 
 function render(){
-  const claimed = claimedOnly(), unclaimed = entries.filter(e => !e.claimed);
+  const claimed = claimedOnly(), unclaimed = entries.filter(e => !Array.isArray(e.kids));
   const list = claimed.filter(matches);
   const kids = list.reduce((n, e) => n + e.kids.length, 0);
   countEl.textContent = claimed.length ? `${list.length} ${list.length === 1 ? "profile" : "profiles"} · ${kids} kids` : "";
@@ -620,7 +620,7 @@ function render(){
   else {
     grid.className = "grid";
     grid.innerHTML = !claimed.length
-      ? `<p class="empty">No one has claimed a profile yet. Find your name below and claim it.</p>`
+      ? (unclaimed.length ? `<p class="empty">No one has claimed a profile yet. Find your name below and claim it.</p>` : `<p class="empty">No one's on the guest list yet.</p>`)
       : `<p class="empty">No profiles match that. Try another word, or pick Everyone.</p>`;
   }
 
@@ -639,7 +639,7 @@ function render(){
 function homeLine(e){
   if (plain(e.home).trim()) return richInline(e.home);
   if (e.askHome.length) return `Ask him about ${esc(e.askHome.join(", ").toLowerCase())}.`;
-  return `<span class="missing">No family details yet.</span>`;
+  return `<span class="missing">No family details yet. Is this you? Add yours.</span>`;
 }
 
 function row(e){
@@ -805,8 +805,8 @@ function profileFieldsHTML(src){
 function manageHTML(confirming){
   const claimed = ed.entry && ed.entry.claimed;
   if (confirming) return `<div class="confirm" role="alert">
-      <p><strong>${claimed ? "Clear everything but your name?" : "Delete the details we started for you?"}</strong>
-      ${claimed ? "Your kids, home and work notes, and links will be erased, and you'll go back to just your name in the directory." : "Your kids, home and work notes will be erased. Only your name stays in the directory."}</p>
+      <p><strong>Clear everything but your name?</strong>
+      Your kids, home and work notes, and links will be erased. Your name stays in the directory. To take your name off too, use Hide my profile.</p>
       <div class="manage-row"><button type="button" class="btn ghost sm" data-clear-cancel>Keep it</button>
         <button type="button" class="btn bad sm" data-clear-confirm>Clear my profile</button></div>
     </div>`;
@@ -817,7 +817,7 @@ function manageHTML(confirming){
       <button type="button" class="btn ghost sm" data-hide="${hidden ? "0" : "1"}">${hidden ? "Show my profile" : "Hide my profile"}</button>
     </div>
     <div class="manage-item">
-      <div><strong>Clear my profile</strong><span class="hint">${claimed ? "Erase everything except your name." : "Erase the details we started for you."}</span></div>
+      <div><strong>Clear my profile</strong><span class="hint">Erase everything except your name.</span></div>
       <button type="button" class="btn bad sm" data-clear>Clear my profile</button>
     </div>`;
 }
@@ -865,10 +865,10 @@ function renderEdit(){
       <fieldset class="group org">
         <legend>Organizer settings</legend>
         <div class="field"><label for="aEmail">Email</label>
-          <span class="hint">His RSVP email. Lets him claim and edit his own profile. Separate more than one with commas.</span>
+          <span class="hint">His RSVP email. Lets him edit his own profile. Separate more than one with commas.</span>
           <input id="aEmail" type="text" inputmode="email" autocomplete="off" value="${esc(p.email)}"></div>
         <label class="switch"><input type="checkbox" id="aClaimed" ${p.claimed ? "checked" : ""}>
-          <span><strong>Show full profile</strong><span class="hint">Off shows just his name with a Claim profile button.</span></span></label>
+          <span><strong>Confirmed by him</strong><span class="hint">Turns on when he saves his own profile. Just a marker; everyone's profile shows either way.</span></span></label>
         <label class="switch"><input type="checkbox" id="aOnList" ${p.onList ? "checked" : ""}>
           <span><strong>On the current guest list</strong><span class="hint">Off keeps him saved but off the page for this event.</span></span></label>
         <label class="switch"><input type="checkbox" id="aHidden" ${p.hidden ? "checked" : ""}>
@@ -884,7 +884,7 @@ function renderEdit(){
   } else if (ed.step === "join"){
     editBody.innerHTML = `<form id="fJoin" novalidate>
       <h2>Ask to be added</h2>
-      <p class="muted">An organizer will add you to this event's guest list. Then find your name and claim your profile with the same email.</p>
+      <p class="muted">An organizer will add you to this event's guest list. Then you can fill in your profile with the same email.</p>
       <div class="field"><label for="jName">Your name</label><input id="jName" maxlength="80" autocomplete="name" required></div>
       <div class="field"><label for="jEmail">Email</label><input id="jEmail" type="email" inputmode="email" autocomplete="email" required value="${esc(ed.email)}"></div>
       ${err}
@@ -894,7 +894,7 @@ function renderEdit(){
     $("#jName").focus();
   } else if (ed.step === "joined"){
     editBody.innerHTML = `<h2>Request sent</h2>
-      <p class="muted">Once an organizer adds you, your name shows up in the directory. Tap Claim profile next to it and use ${esc(ed.email)}.</p>
+      <p class="muted">Once an organizer adds you, your name shows up in the directory. Tap Edit your profile at the top and use ${esc(ed.email)}.</p>
       <div class="actions"><button type="button" class="btn primary" data-cancel>Done</button></div>`;
   } else if (ed.step === "loading"){
     editBody.innerHTML = `<h2>Your profile</h2><p class="muted" role="status">Opening your profile…</p>`;
@@ -902,14 +902,14 @@ function renderEdit(){
     const src = ed.pending || ed.entry;
     const claimed = ed.entry.claimed;
     editBody.innerHTML = `<form id="fEntry" novalidate>
-      <h2>${claimed ? "Your profile" : "Claim your profile"}</h2>
+      <h2>Your profile</h2>
       <p class="as-email">Using ${esc(ed.email)} <button type="button" class="btn link inline" data-switch>Change</button></p>
-      ${!claimed ? `<p class="notice">We started your profile from what we know. Fix anything that's off and add what's missing. Nothing shows publicly until you publish it.</p>` : `<p class="muted">Changes show up in the directory as soon as you save.</p>`}
+      ${!claimed ? `<p class="notice">We started your profile from what we know, and it's showing in the directory now. Fix anything that's off and add what's missing. Rather not be listed? You can hide or clear it at the bottom.</p>` : `<p class="muted">Changes show up in the directory as soon as you save.</p>`}
       ${ed.entry.hidden ? `<p class="notice hidden-note">Your profile is hidden. Nobody else can see your name in the directory right now.</p>` : ""}
       ${profileFieldsHTML(src)}
       ${err}
       <div class="actions"><button type="button" class="btn ghost" data-cancel>Cancel</button>
-        <button class="btn primary" ${dis}>${ed.busy ? (claimed ? "Saving…" : "Publishing…") : claimed ? "Save changes" : "Publish my profile"}</button></div>
+        <button class="btn primary" ${dis}>${ed.busy ? "Saving…" : "Save changes"}</button></div>
 
       <hr class="divider">
       <fieldset class="group manage">
@@ -925,8 +925,8 @@ function renderEdit(){
         <div class="actions"><button type="button" class="btn primary" data-cancel>Done</button></div>`;
       return;
     }
-    editBody.innerHTML = `<h2>${ed.justClaimed ? "Your profile is live" : "Changes saved"}</h2>
-      <p class="muted">${ed.justClaimed ? "Welcome in. Everyone at the meetup can see your profile now. Come back anytime to update it." : "Your profile is updated in the directory."}</p>
+    editBody.innerHTML = `<h2>Changes saved</h2>
+      <p class="muted">${ed.justClaimed ? "Thanks for filling it in. Come back anytime to update it." : "Your profile is updated in the directory."}</p>
       <div class="actions"><button type="button" class="btn ghost" data-cancel>Done</button>
         <button type="button" class="btn primary" data-view-mine>See my profile</button></div>`;
   }
@@ -1100,10 +1100,10 @@ async function renderAdmin(){
         : `<p class="notice">Paste the latest Code.gs into Apps Script and deploy a new version to edit everyone here.</p>`}
     </section>
     <section aria-labelledby="recTitle">
-      <h3 id="recTitle">Recent claims and edits</h3>
+      <h3 id="recTitle">Recent edits</h3>
       ${oldBackend ? `<p class="notice">Your Apps Script is still the older version, so claims and edits wait below for approval. Paste in the new Code.gs and deploy a new version to make them post automatically.</p>`
         : `<p class="muted small">These went live right away. Undo puts back the version from before the change.</p>
-      ${recent.length ? recent.map(recentHTML).join("") : `<p class="muted">No claims or edits yet.</p>`}`}
+      ${recent.length ? recent.map(recentHTML).join("") : `<p class="muted">No edits yet.</p>`}`}
     </section>
     <section aria-labelledby="revTitle">
       <h3 id="revTitle">${oldBackend ? "Waiting for approval" : "Requests to join"}</h3>
@@ -1161,7 +1161,7 @@ function peopleTableHTML(){
       (!q || norm([p.name, p.company, p.email].join(" ")).includes(q)))
     .sort((a, b) => a.name.localeCompare(b.name));
   if (!list.length) return `<p class="muted">No one matches.</p>`;
-  const status = p => p.hidden ? `<span class="st st-hidden">Hidden</span>` : p.claimed ? `<span class="st st-live">Live</span>` : `<span class="st st-name">Name only</span>`;
+  const status = p => p.hidden ? `<span class="st st-hidden">Hidden</span>` : p.claimed ? `<span class="st st-live">Confirmed</span>` : `<span class="st st-name">Not confirmed</span>`;
   return `<p class="muted small">${list.length} ${list.length === 1 ? "person" : "people"}. Tap a row to edit.</p>
     <div class="ppl-wrap"><table class="ppl">
       <thead><tr><th>Name</th><th>Kids</th><th>Business</th><th>Email</th><th>Profile</th>${peopleHasEvent ? "<th>Guest list</th>" : ""}<th><span class="vh">Edit</span></th></tr></thead>
@@ -1190,7 +1190,7 @@ function recentHTML(it){
   const changed = FIELDS.filter(([k]) => fmt(k, prev[k]) !== fmt(k, now[k]));
   const when = new Date(it.submittedAt);
   return `<details class="recent" data-rec="${esc(it.submissionId)}">
-      <summary><span class="rec-name"><strong>${esc(it.name)}</strong>${it.claim ? ` <span class="tag-claim">Claimed</span>` : ` <span class="tag-edit">Edited</span>`}</span>
+      <summary><span class="rec-name"><strong>${esc(it.name)}</strong>${it.claim ? ` <span class="tag-claim">First edit</span>` : ` <span class="tag-edit">Edited</span>`}</span>
         <span class="muted small">${esc(it.email)} · ${isNaN(when) ? "" : esc(ago(it.submittedAt))}</span></summary>
       ${changed.length ? `<div class="diff"><span></span><span class="colh">Before</span><span class="colh">After</span>
         ${changed.map(([k,l]) => `<div class="f">${l}</div><div class="b">${esc(fmt(k, prev[k])) || "<em>empty</em>"}</div><div class="a">${esc(fmt(k, now[k])) || "<em>empty</em>"}</div>`).join("")}
@@ -1206,7 +1206,7 @@ function addHTML(err){
   return `<form id="fAdd" class="add-form" novalidate>
       <div class="add-fields">
         <div class="field"><label for="adName">Name</label><input id="adName" maxlength="80" required autocomplete="off"></div>
-        <div class="field"><label for="adEmail">Email <span class="hint">optional, lets them claim their profile</span></label><input id="adEmail" type="email" autocomplete="off"></div>
+        <div class="field"><label for="adEmail">Email <span class="hint">optional, lets them edit their own profile</span></label><input id="adEmail" type="email" autocomplete="off"></div>
       </div>
       <p class="muted small">They're added to the current event right away and stay on it when Luma syncs.</p>
       ${err ? `<p class="error" role="alert">${esc(err)}</p>` : ""}
@@ -1486,14 +1486,12 @@ function makeDemo(){
       if (!byEmail && t.email) throw new Error(`That email doesn't match the RSVP for ${t.name}. Use the address you RSVP'd with.`);
       return t;
     }
-    if (!byEmail) throw new Error("That email isn't on the RSVP list. Find your name in the directory and tap Claim profile.");
+    if (!byEmail) throw new Error("That email isn't on the RSVP list. Use the address you RSVP'd with, or ask to be added.");
     return byEmail;
   }
   const pendingFor = id => pending.filter(x => x.entryId === id && x.status === "pending").pop();
   return {
-    list: () => ({ event: { name:event.name, date:event.date, url:event.url }, entries: db.filter(e => !e.hidden && event.ids.has(e.id)).map(e => e.claimed
-      ? Object.assign(pub(e), { claimed:true })
-      : { id:e.id, name:e.name, claimed:false, pending: !!pendingFor(e.id) }) }),
+    list: () => ({ event: { name:event.name, date:event.date, url:event.url }, entries: db.filter(e => !e.hidden && event.ids.has(e.id)).map(e => Object.assign(pub(e), { claimed: !!e.claimed })) }),
     open({ email, id }){ const e = auth(email, id); const p = pendingFor(e.id); return { email, entry: owner(e), pending: p ? p.data : null }; },
     submit({ email, id, entry }){
       const e = auth(email, id);
@@ -1591,7 +1589,7 @@ function makeDemo(){
     requestJoin({ name, email }){
       email = norm(email);
       const mine = db.find(e => e.email === email);
-      if (mine && event.ids.has(mine.id)) throw new Error("You're already on the list. Find your name below and tap Claim profile.");
+      if (mine && event.ids.has(mine.id)) throw new Error("You're already on the list. Tap Edit your profile at the top to fill yours in.");
       pending.forEach(x => { if (x.data.type === "join" && x.email === email && x.status === "pending") x.status = "replaced"; });
       pending.push({ submissionId: Math.random().toString(36).slice(2), entryId:"", email, submittedAt:new Date().toISOString(), status:"pending", data:{ type:"join", name } });
       return {};
