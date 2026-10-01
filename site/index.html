@@ -531,8 +531,8 @@ body{font-size:17px; line-height:1.6}
 .mini-tag:hover{transform:rotate(-1deg)}
 .mini-tag:focus-visible{outline:3px solid var(--rust); outline-offset:2px}
 .mini-band{background:var(--rust); color:#fff; font-weight:800; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; padding:3px 10px; border-bottom:2px solid var(--outline)}
-.mini-name{font-size:1.25rem; line-height:1.15; padding:8px 10px 2px; color:var(--marker)}
-.mini-why{font-size:.83rem; line-height:1.4; color:var(--muted); padding:0 10px 10px}
+.mini-name{font-size:1.25rem; line-height:1.15; padding:10px 12px 2px; color:var(--marker)}
+.mini-why{font-size:.83rem; line-height:1.4; color:var(--muted); padding:0 12px 12px}
 .nt-foot-row{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:18px}
 .nt-foot-row .btn.link{padding-left:0}
 .nt.flash{box-shadow:0 0 0 4px var(--rust)}
@@ -919,7 +919,6 @@ function detailHTML(e){
     ${pairs.length ? `<section class="nt-pairs">
       <h3 class="nt-label">You should meet</h3>
       <ul class="mini-tags">${pairs.map(p => `<li><button type="button" class="mini-tag" data-goto="${esc(p.o.id)}">
-        <span class="mini-band">Hello</span>
         <span class="mini-name marker">${esc(p.o.name)}</span>
         <span class="mini-why">${esc(p.why.join(" · "))}</span></button></li>`).join("")}</ul>
     </section>` : ""}
