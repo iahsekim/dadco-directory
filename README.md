@@ -52,3 +52,6 @@ With `API_URL` blank the page runs a self-contained demo: a few profiles are pre
 - After changing `Code.gs`, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
 
 _Deploys automatically from `main` via Netlify (public repo)._
+
+## AI profile writer (optional)
+People can paste a few rambling sentences ("throw spaghetti at the wall") and get a tidy profile back. To turn it on, create an API key at console.anthropic.com and add it in Apps Script → Project Settings → Script Properties as `ANTHROPIC_API_KEY`. Without a key, the box is hidden and people fill in the fields by hand. The model is set by `AI_MODEL` at the top of Code.gs.
